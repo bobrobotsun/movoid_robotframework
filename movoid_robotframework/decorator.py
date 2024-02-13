@@ -27,8 +27,8 @@ if VERSION == '6':
         def wrapper(kwargs):
             data = RunningKeyword(func.__name__)
             result = ResultKeyword(func.__name__,
-                                   args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in kwargs.items()],
-                                   doc=func.__doc__)
+                                   args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in kwargs.items() if _i != 'self'],
+                                   doc=func.__doc__.replace('\n', '\n\n'))
             result.starttime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
             combine = ModelCombiner(data, result)
             LOGGER.start_keyword(combine)
@@ -66,8 +66,8 @@ elif VERSION == '7':
         def wrapper(kwargs):
             data = RunningKeyword(func.__name__)
             result = ResultKeyword(func.__name__,
-                                   args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in kwargs.items()],
-                                   doc=func.__doc__)
+                                   args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in kwargs.items() if _i != 'self'],
+                                   doc=func.__doc__.replace('\n', '\n\n'))
             result.start_time = datetime.datetime.now()
             LOGGER.start_keyword(data, result)
             temp_error = None

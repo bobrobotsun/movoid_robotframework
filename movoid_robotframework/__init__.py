@@ -7,5 +7,5 @@
 # Description   : 
 """
 from .version import RUN, VERSION
-from .main import RobotBasic
+from .main import RobotBasic, LibBasic
 from .decorator import robot_log_keyword, do_until_check

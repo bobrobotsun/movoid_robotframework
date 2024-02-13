@@ -22,9 +22,11 @@ class BasicCommon(BasicLog):
         self.warn_list = []
         self.output_dir = getattr(self, 'output_dir', None)
 
+    @robot_log_keyword
     def get_robot_variable(self, variable_name: str, default=None):
         return self.built.get_variable_value("${" + variable_name + "}", default)
 
+    @robot_log_keyword
     def set_robot_variable(self, variable_name: str, value):
         self.built.set_global_variable("${" + variable_name + "}", value)
 

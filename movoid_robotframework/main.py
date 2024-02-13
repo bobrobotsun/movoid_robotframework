@@ -6,8 +6,12 @@
 # Time          : 2024/2/13 11:58
 # Description   : 
 """
-from .common import BasicCommon
+from .calculate import BasicCalculate
 
 
-class RobotBasic(BasicCommon):
+class RobotBasic(BasicCalculate):
+    pass
+
+
+class LibBasic(RobotBasic):
     pass
