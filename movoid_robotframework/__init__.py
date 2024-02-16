@@ -8,4 +8,4 @@
 """
 from .version import RUN, VERSION
 from .main import RobotBasic, LibBasic
-from .decorator import robot_log_keyword, do_until_check, check_parameters_type
+from .decorator import robot_log_keyword, do_until_check, do_when_error, check_parameters_type
