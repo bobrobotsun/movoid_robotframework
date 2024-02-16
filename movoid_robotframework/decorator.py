@@ -9,86 +9,90 @@
 import time
 
 from .version import VERSION
-from movoid_function import wraps_func
+from movoid_function import wraps_func, reset_function_default_value
+from movoid_function import type as function_type
 
-if VERSION == '6':
-    import datetime
-    import traceback
-    from robot.api import logger
-    from robot.running.model import Keyword as RunningKeyword
-    from robot.result.model import Keyword as ResultKeyword
-    from robot.running.modelcombiner import ModelCombiner  # noqa
-    from robot.output.logger import LOGGER
-    from robot.running.outputcapture import OutputCapturer
+if VERSION:
+    if VERSION == '6':
+        import datetime
+        import traceback
+        from robot.api import logger
+        from robot.running.model import Keyword as RunningKeyword
+        from robot.result.model import Keyword as ResultKeyword
+        from robot.running.modelcombiner import ModelCombiner  # noqa
+        from robot.output.logger import LOGGER
+        from robot.running.outputcapture import OutputCapturer
 
 
-    def _robot_log_keyword(func):
-        @wraps_func(func)
-        def wrapper(kwargs):
-            data = RunningKeyword(func.__name__)
-            result = ResultKeyword(func.__name__,
-                                   args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in kwargs.items() if _i != 'self'],
-                                   doc=func.__doc__.replace('\n', '\n\n'))
-            result.starttime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
-            combine = ModelCombiner(data, result)
-            LOGGER.start_keyword(combine)
-            temp_error = None
-            with OutputCapturer():
-                try:
-                    re_value = func(**kwargs)
-                except Exception as err:
-                    result.status = 'FAIL'
-                    logger.error(traceback.format_exc())
-                    temp_error = err
+        def _robot_log_keyword(func):
+            @wraps_func(func)
+            def wrapper(kwargs):
+                data = RunningKeyword(func.__name__)
+                result = ResultKeyword(func.__name__,
+                                       args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in kwargs.items() if _i != 'self'],
+                                       doc=func.__doc__.replace('\n', '\n\n'))
+                result.starttime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
+                combine = ModelCombiner(data, result)
+                LOGGER.start_keyword(combine)
+                temp_error = None
+                with OutputCapturer():
+                    try:
+                        re_value = func(**kwargs)
+                    except Exception as err:
+                        result.status = 'FAIL'
+                        logger.error(traceback.format_exc())
+                        temp_error = err
+                    else:
+                        logger.info(f'{re_value}({type(re_value).__name__}):is return value')
+                        result.status = 'PASS'
+                result.endtime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
+                LOGGER.end_keyword(combine)
+                if result.status == 'FAIL':
+                    raise temp_error
                 else:
-                    logger.info(f'{re_value}({type(re_value).__name__}):is return value')
-                    result.status = 'PASS'
-            result.endtime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
-            LOGGER.end_keyword(combine)
-            if result.status == 'FAIL':
-                raise temp_error
-            else:
-                return re_value
+                    return re_value
 
-        return wrapper
-elif VERSION == '7':
-    import datetime
-    import traceback
-    from robot.api import logger
-    from robot.running.model import Keyword as RunningKeyword
-    from robot.result.model import Keyword as ResultKeyword
-    from robot.output.logger import LOGGER
-    from robot.running.outputcapture import OutputCapturer
+            return wrapper
+    elif VERSION == '7':
+        import datetime
+        import traceback
+        from robot.api import logger
+        from robot.running.model import Keyword as RunningKeyword
+        from robot.result.model import Keyword as ResultKeyword
+        from robot.output.logger import LOGGER
+        from robot.running.outputcapture import OutputCapturer
 
 
-    def _robot_log_keyword(func):
-        @wraps_func(func)
-        def wrapper(kwargs):
-            data = RunningKeyword(func.__name__)
-            result = ResultKeyword(func.__name__,
-                                   args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in kwargs.items() if _i != 'self'],
-                                   doc=func.__doc__.replace('\n', '\n\n'))
-            result.start_time = datetime.datetime.now()
-            LOGGER.start_keyword(data, result)
-            temp_error = None
-            with OutputCapturer():
-                try:
-                    re_value = func(**kwargs)
-                    logger.info(f'{re_value}({type(re_value).__name__}):is return value')
-                except Exception as err:
-                    result.status = 'FAIL'
-                    logger.error(traceback.format_exc())
-                    temp_error = err
+        def _robot_log_keyword(func):
+            @wraps_func(func)
+            def wrapper(kwargs):
+                data = RunningKeyword(func.__name__)
+                result = ResultKeyword(func.__name__,
+                                       args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in kwargs.items() if _i != 'self'],
+                                       doc=func.__doc__.replace('\n', '\n\n'))
+                result.start_time = datetime.datetime.now()
+                LOGGER.start_keyword(data, result)
+                temp_error = None
+                with OutputCapturer():
+                    try:
+                        re_value = func(**kwargs)
+                        logger.info(f'{re_value}({type(re_value).__name__}):is return value')
+                    except Exception as err:
+                        result.status = 'FAIL'
+                        logger.error(traceback.format_exc())
+                        temp_error = err
+                    else:
+                        result.status = 'PASS'
+                result.end_time = datetime.datetime.now()
+                LOGGER.end_keyword(data, result)
+                if result.status == 'FAIL':
+                    raise temp_error
                 else:
-                    result.status = 'PASS'
-            result.end_time = datetime.datetime.now()
-            LOGGER.end_keyword(data, result)
-            if result.status == 'FAIL':
-                raise temp_error
-            else:
-                return re_value
+                    return re_value
 
-        return wrapper
+            return wrapper
+    else:
+        raise ImportError('robotframework should be 6 or 7. please pip install robotframework again')
 else:
     def _robot_log_keyword(func):
         return func
@@ -127,14 +131,14 @@ def do_until_check(do_function, check_function, timeout=5, init_check=True, init
         def wrapper(self,
                     do_kwargs,
                     check_kwargs,
-                    timeout=_timeout,
-                    init_check=_init_check,
-                    init_sleep=_init_sleep,
-                    wait_before_check=_wait_before_check,
-                    do_interval=_do_interval,
-                    check_timeout=_check_timeout,
-                    check_interval=_check_interval,
-                    error=_error):
+                    timeout=_timeout,  # noqa
+                    init_check=_init_check,  # noqa
+                    init_sleep=_init_sleep,  # noqa
+                    wait_before_check=_wait_before_check,  # noqa
+                    do_interval=_do_interval,  # noqa
+                    check_timeout=_check_timeout,  # noqa
+                    check_interval=_check_interval,  # noqa
+                    error=_error):  # noqa
             fail_print = []
             do_text = f'do {do_function.__name__}{do_kwargs}'
             check_text = f'check {check_function.__name__}{check_kwargs}'
@@ -204,3 +208,65 @@ def do_until_check(do_function, check_function, timeout=5, init_check=True, init
         return wrapper
 
     return dec
+
+
+class Bool(function_type.Bool):
+    def __init__(self, limit='', convert=True, **kwargs):
+        super().__init__(limit=limit, convert=convert, **kwargs)
+
+
+class Int(function_type.Int):
+    def __init__(self, limit='', convert=True, **kwargs):
+        super().__init__(limit=limit, convert=convert, **kwargs)
+
+
+class Float(function_type.Float):
+    def __init__(self, limit='', convert=True, **kwargs):
+        super().__init__(limit=limit, convert=convert, **kwargs)
+
+
+class Number(function_type.Number):
+    def __init__(self, limit='', convert=True, **kwargs):
+        super().__init__(limit=limit, convert=convert, **kwargs)
+
+
+class Str(function_type.Str):
+    def __init__(self, char=None, length='', regex=None, convert=True, **kwargs):
+        super().__init__(char=char, length=length, regex=regex, convert=convert, **kwargs)
+
+
+class List(function_type.List):
+    def __init__(self, length='', convert=True, **kwargs):
+        super().__init__(length=length, convert=convert, **kwargs)
+
+
+class Tuple(function_type.Tuple):
+    def __init__(self, length='', convert=True, **kwargs):
+        super().__init__(length=length, convert=convert, **kwargs)
+
+
+class Set(function_type.Set):
+    def __init__(self, length='', convert=True, **kwargs):
+        super().__init__(length=length, convert=convert, **kwargs)
+
+
+class Dict(function_type.Dict):
+    def __init__(self, length='', convert=True, **kwargs):
+        super().__init__(length=length, convert=convert, **kwargs)
+
+
+function_type.default_type = {
+    bool: Bool,
+    str: Str,
+    int: Int,
+    float: Float,
+    list: List,
+    set: Set,
+    tuple: Tuple,
+    dict: Dict,
+}
+
+
+@reset_function_default_value(function_type.check_parameters_type)
+def check_parameters_type(convert=True, check_arguments=True, check_return=True):  # noqa
+    pass
