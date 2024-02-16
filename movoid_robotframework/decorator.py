@@ -210,6 +210,23 @@ def do_until_check(do_function, check_function, timeout=5, init_check=True, init
     return dec
 
 
+def do_when_error(error_function):
+    def dec(func):
+        @wraps_func(func, error_function)
+        def wrapper(kwargs, error_kwargs):
+            try:
+                re_value = func(**kwargs)
+            except Exception as err:
+                error_function(**error_kwargs)
+                raise err
+            else:
+                return re_value
+
+        return wrapper
+
+    return dec
+
+
 class Bool(function_type.Bool):
     def __init__(self, limit='', convert=True, **kwargs):
         super().__init__(limit=limit, convert=convert, **kwargs)

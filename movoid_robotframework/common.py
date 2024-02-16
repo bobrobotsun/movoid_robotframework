@@ -75,3 +75,6 @@ class BasicCommon(BasicLog):
         :return: None
         """
         ori_dict[key] = value
+
+    def always_true(self):
+        return True
