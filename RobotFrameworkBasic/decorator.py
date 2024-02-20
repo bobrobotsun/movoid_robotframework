@@ -8,9 +8,10 @@
 """
 import time
 
-from .version import VERSION
-from movoid_function import wraps_func, reset_function_default_value
 from movoid_function import type as function_type
+from movoid_function import wraps, wraps_func, reset_function_default_value, analyse_args_value_from_function
+
+from .version import VERSION
 
 if VERSION:
     if VERSION == '6':
@@ -25,22 +26,23 @@ if VERSION:
 
 
         def _robot_log_keyword(func):
-            @wraps_func(func)
-            def wrapper(kwargs):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                arg_dict = analyse_args_value_from_function(func, *args, **kwargs)
                 data = RunningKeyword(func.__name__)
                 result = ResultKeyword(func.__name__,
-                                       args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in kwargs.items() if _i != 'self'],
-                                       doc=func.__doc__.replace('\n', '\n\n'))
+                                       args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
+                                       doc=None if func.__doc__ is None else func.__doc__.replace('\n', '\n\n'))
                 result.starttime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
                 combine = ModelCombiner(data, result)
                 LOGGER.start_keyword(combine)
                 temp_error = None
                 with OutputCapturer():
                     try:
-                        re_value = func(**kwargs)
+                        re_value = func(*args, **kwargs)
                     except Exception as err:
                         result.status = 'FAIL'
-                        logger.error(traceback.format_exc())
+                        logger.info(traceback.format_exc())
                         temp_error = err
                     else:
                         logger.info(f'{re_value}({type(re_value).__name__}):is return value')
@@ -64,22 +66,23 @@ if VERSION:
 
 
         def _robot_log_keyword(func):
-            @wraps_func(func)
-            def wrapper(kwargs):
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                arg_dict = analyse_args_value_from_function(func, *args, **kwargs)
                 data = RunningKeyword(func.__name__)
                 result = ResultKeyword(func.__name__,
-                                       args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in kwargs.items() if _i != 'self'],
-                                       doc=func.__doc__.replace('\n', '\n\n'))
+                                       args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
+                                       doc=None if func.__doc__ is None else func.__doc__.replace('\n', '\n\n'))
                 result.start_time = datetime.datetime.now()
                 LOGGER.start_keyword(data, result)
                 temp_error = None
                 with OutputCapturer():
                     try:
-                        re_value = func(**kwargs)
+                        re_value = func(*args, **kwargs)
                         logger.info(f'{re_value}({type(re_value).__name__}):is return value')
                     except Exception as err:
                         result.status = 'FAIL'
-                        logger.error(traceback.format_exc())
+                        logger.info(traceback.format_exc())
                         temp_error = err
                     else:
                         result.status = 'PASS'

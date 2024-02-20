@@ -9,8 +9,8 @@
 import math
 import random
 
-from .decorator import robot_log_keyword
-from .common import BasicCommon
+from ..decorator import robot_log_keyword
+from ..common import BasicCommon
 
 
 class BasicCalculate(BasicCommon):
@@ -94,7 +94,7 @@ class BasicCalculate(BasicCommon):
         try:
             number1 = self.analyse_json(number1)
             number2 = self.analyse_json(number2)
-            digit = abs(int(digit))
+            digit = int(digit)
             offset_max = abs(float(offset_max))
             if isinstance(number1, list):
                 check1 = sum([float(_) for _ in number1]) / len(number1)
@@ -112,4 +112,50 @@ class BasicCalculate(BasicCommon):
             return re_bool
         except Exception as err:
             self.print(f'return Fail!contrast two object <{number1}> and <{number2}> failed:{err}')
+            return False
+
+    @robot_log_keyword
+    def calculate_each_similar_in_digit(self, list1, list2, digit=3, offset_max=1.001):
+        """
+        计算两组数之间，在某一位之前是否完全
+        :param list1: 第一组数组
+        :param list2: 第二组数组
+        :param digit: 小数点后位数
+        :param offset_max: 允许的误差极限，如果是digit=3，offset_max=1.001，意味着允许两个数值有最多1.001e-3的差值
+        :return: true or false。两者是否相近
+        """
+        try:
+            object1 = self.analyse_json(list1)
+            object2 = self.analyse_json(list2)
+            digit = int(digit)
+            self.print(f'start to contrast two value:({object1}) vs ({object2}),digit is {digit}')
+            re_bool = True
+            if isinstance(object1, list):
+                for i, v in enumerate(object1):
+                    object1[i] = float(v)
+                if len(object1) == 1:
+                    object1 = object1[0]
+                    self.print(f'object1 is len 1 list ,change to float:{object1}')
+            if isinstance(object2, list):
+                for i, v in enumerate(object2):
+                    object2[i] = float(v)
+                if len(object2) == 1:
+                    object2 = object2[0]
+                    self.print(f'object2 is len 1 list ,change to float:{object2}')
+
+            if isinstance(object1, list) and isinstance(object2, list):
+                if len(object1) == len(object2):
+                    for i, v1 in enumerate(object1):
+                        v2 = object2[i]
+                        if not self.calculate_average_similar_in_digit(v1, v2, digit, offset_max):
+                            re_bool = False
+                            break
+                else:
+                    self.print(f'their length {len(object1)}!={len(object2)},failed')
+                    re_bool = False
+            elif isinstance(object1, float) and isinstance(object2, float):
+                re_bool = self.calculate_average_similar_in_digit(object1, object2, digit, offset_max)
+            return re_bool
+        except Exception as err:
+            self.print(f'return Fail!contrast two object <{list1}> and <{list2}> failed:{err}')
             return False
