@@ -100,7 +100,7 @@ else:
 robot_log_keyword = _robot_log_keyword
 
 
-def do_until_check(do_function, check_function, timeout=5, init_check=True, init_sleep=0, wait_before_check=0, do_interval=1, check_timeout=1, check_interval=0.2, error=True):
+def do_until_check(do_function, check_function, timeout=5, init_check=True, init_check_function=None, init_sleep=0, wait_before_check=0, do_interval=1, check_timeout=1, check_interval=0.2, error=True):
     """
     通过操作某个函数，达成某个最终的目的。如果检查未通过，那么会循环进行操作
     这是一个装饰器，需要套在一个空函数上（仅函数名会被继承）
@@ -109,6 +109,7 @@ def do_until_check(do_function, check_function, timeout=5, init_check=True, init
     :param check_function:检查函数，返回值必须是一个bool值，或者返回值会被强制转换为bool
     :param timeout:最大时常/超时。检查超过这个时常后，会认为操作失败.
     :param init_check:是否进行初始检查，如果为True，那么会在操作前进行检查，如果通过，那么会跳过操作，直接结束
+    :param init_check_function:初始检查函数，返回值必须是一个bool值，或者返回值会被强制转换为bool，如果存在。那么初始检查会考虑使用这个。这个函数的参数必须和check_function完全一致，否则会报错
     :param init_sleep:初始的等待时间，在初始检查前进行的等待，不计入整体timeout时间，一般配合初始检查init_check=True使用
     :param wait_before_check:在常规检查前的等待时间，一般是和上一次的操作存在一定的等待时间，保证上次的操作可以真实地
     :param do_interval:两次操作之间地最小间隔。一般是检查结束后，到操作之前的时间。主要是为了保证不要进行太多次的循环
@@ -119,6 +120,7 @@ def do_until_check(do_function, check_function, timeout=5, init_check=True, init
     """
     _timeout = 5 if timeout is None else float(timeout)  # type:float
     _init_check = True if init_check is None else bool(init_check)  # type:bool
+    init_check_function = check_function if init_check_function is None else init_check_function
     _init_sleep = 0 if init_sleep is None else float(init_sleep)  # type:float
     _wait_before_check = 1 if wait_before_check is None else float(wait_before_check)  # type:float
     _do_interval = 1 if do_interval is None else float(do_interval)  # type:float
@@ -144,7 +146,7 @@ def do_until_check(do_function, check_function, timeout=5, init_check=True, init
             check_text = f'check {check_function.__name__}{check_kwargs}'
             if init_check:
                 try:
-                    check_bool = check_function(**check_kwargs)
+                    check_bool = init_check_function(**check_kwargs)
                     if check_bool:
                         self.print(f'init {check_text} pass.do_until_check end.')
                         return True
