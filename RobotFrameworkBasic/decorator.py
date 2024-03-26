@@ -103,7 +103,7 @@ else:
 robot_log_keyword = _robot_log_keyword
 
 
-def do_until_check(do_function, check_function, timeout=5, init_check=True, init_check_function=None, init_sleep=0, wait_before_check=0, do_interval=1, check_timeout=1, check_interval=0.2, error=True):
+def do_until_check(do_function, check_function, timeout=30, init_check=True, init_check_function=None, init_sleep=0, wait_before_check=0, do_interval=1, check_timeout=1, check_interval=0.2, error=True):
     """
     通过操作某个函数，达成某个最终的目的。如果检查未通过，那么会循环进行操作
     这是一个装饰器，需要套在一个空函数上（仅函数名会被继承）
@@ -121,14 +121,14 @@ def do_until_check(do_function, check_function, timeout=5, init_check=True, init
     :param error:当检查失败后，是否raise一个error。默认为True，会raise。
     :return: 返回是否判定成功，但是当error=True时，失败了会raise AssertionError，那也就不会有返回值了
     """
-    _timeout = 5 if timeout is None else float(timeout)  # type:float
+    _timeout = 30 if timeout is None else float(timeout)  # type:float
     _init_check = True if init_check is None else bool(init_check)  # type:bool
     init_check_function = check_function if init_check_function is None else init_check_function
     _init_sleep = 0 if init_sleep is None else float(init_sleep)  # type:float
     _wait_before_check = 1 if wait_before_check is None else float(wait_before_check)  # type:float
     _do_interval = 1 if do_interval is None else float(do_interval)  # type:float
     _check_timeout = 0 if check_timeout is None else float(check_timeout)  # type:float
-    _check_interval = 1 if check_interval is None else float(check_interval)  # type:float
+    _check_interval = 0.2 if check_interval is None else float(check_interval)  # type:float
     _error = True if error is None else bool(error)  # type:bool
 
     def dec(func):
