@@ -103,7 +103,7 @@ else:
 robot_log_keyword = _robot_log_keyword
 
 
-def do_until_check(do_function, check_function, timeout=30, init_check=True, init_check_function=None, init_sleep=0, wait_before_check=0, do_interval=1, check_timeout=1, check_interval=0.2, error=True):
+def do_until_check(do_function, check_function, timeout=30, init_check=True, init_check_function=None, init_sleep=0, wait_before_check=0, do_interval=1, check_interval=0.2, error=True):
     """
     通过操作某个函数，达成某个最终的目的。如果检查未通过，那么会循环进行操作
     这是一个装饰器，需要套在一个空函数上（仅函数名会被继承）
@@ -116,7 +116,6 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
     :param init_sleep:初始的等待时间，在初始检查前进行的等待，不计入整体timeout时间，一般配合初始检查init_check=True使用
     :param wait_before_check:在常规检查前的等待时间，一般是和上一次的操作存在一定的等待时间，保证上次的操作可以真实地
     :param do_interval:两次操作之间地最小间隔。一般是检查结束后，到操作之前的时间。主要是为了保证不要进行太多次的循环
-    :param check_timeout:检查的超时时间，如果想要进行更多次的检查可以设置这个数值
     :param check_interval:连续两次检查之间的时间间隔，默认值为1，如果想要进行更细致的循环检查，可以将这个数值设置得更小
     :param error:当检查失败后，是否raise一个error。默认为True，会raise。
     :return: 返回是否判定成功，但是当error=True时，失败了会raise AssertionError，那也就不会有返回值了
@@ -127,7 +126,6 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
     _init_sleep = 0 if init_sleep is None else float(init_sleep)  # type:float
     _wait_before_check = 1 if wait_before_check is None else float(wait_before_check)  # type:float
     _do_interval = 1 if do_interval is None else float(do_interval)  # type:float
-    _check_timeout = 0 if check_timeout is None else float(check_timeout)  # type:float
     _check_interval = 0.2 if check_interval is None else float(check_interval)  # type:float
     _error = True if error is None else bool(error)  # type:bool
 
@@ -141,7 +139,6 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                     init_sleep=_init_sleep,  # noqa
                     wait_before_check=_wait_before_check,  # noqa
                     do_interval=_do_interval,  # noqa
-                    check_timeout=_check_timeout,  # noqa
                     check_interval=_check_interval,  # noqa
                     error=_error):  # noqa
             fail_print = []
@@ -177,7 +174,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                 check_time = 0
                 check_time_point = time.time()
                 check_loop_time = 0
-                while check_time < check_timeout:
+                while check_time < do_interval:
                     check_interval_time_point = time.time()
                     check_loop_time += 1
                     try:
