@@ -108,3 +108,21 @@ class BasicCommon:
 
     def always_true(self):
         return True
+
+    @robot_log_keyword
+    def get_suit_case_str(self, join_str: str = '-', suit: bool = True, case: bool = True):
+        """
+        获取当前的suit、case的名称
+        :param join_str: suit和case的连接字符串，默认为-
+        :param suit: 是否显示suit名
+        :param case: 是否显示case名，如果不是case内，即使True也不显示
+        :return: 连接好的字符串
+        """
+        sc_list = []
+        if suit:
+            sc_list.append(self.get_robot_variable('SUITE NAME'))
+        if case:
+            temp = self.get_robot_variable('TEST NAME')
+            if temp is not None:
+                sc_list.append(self.get_robot_variable('TEST NAME'))
+        return join_str.join(sc_list)
