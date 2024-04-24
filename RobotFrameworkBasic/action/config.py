@@ -20,6 +20,9 @@ class ConfigItem:
         self._root: str = source
         self._source: str = source
 
+    def __getitem__(self, item):
+        return self._value
+
     @property
     def value(self) -> Any:
         return self._value
@@ -73,6 +76,7 @@ class BasicConfig(BasicCommon):
                 continue
             else:
                 self.__config_ori_update(i, v, file=False)
+        self.__config_write_file()
 
     def __config_ori_update(self, label: str, kv_dict: Dict[str, Any], override=True, file=True):
         label_now = f'${label}'
@@ -99,6 +103,10 @@ class BasicConfig(BasicCommon):
         temp_dict = {_k: _v for _k, _v in self._config_ori.items() if not _k.startswith('$')}
         with self._config_path.open(mode='w') as f:
             json.dump(temp_dict, f, default=lambda x: x.value)
+        temp_path = self._config_path.parent / f'${self._config_path.name}'
+        self.print(temp_path)
+        with temp_path.open(mode='w') as f:
+            json.dump(self._config_ori, f, default=lambda x: x.value)
 
     def config_use_label(self, *labels, override=True, clear=False):
         if clear:
