@@ -1,5 +1,4 @@
 twine
 build
-requests
 robotframework
 movoid-function

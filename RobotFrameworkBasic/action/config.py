@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Dict, Any, List
 
 from ..common import BasicCommon
+from ..decorator import robot_log_keyword
 
 
 class ConfigItem:
@@ -42,7 +43,7 @@ class ConfigItem:
 
 
 class BasicConfig(BasicCommon):
-    __suit_case_label = '__suit_case__'
+    __suite_case_label = '__suit_case__'
 
     def __init__(self):
         super().__init__()
@@ -52,10 +53,12 @@ class BasicConfig(BasicCommon):
         self._config_label_list: List[str] = []
         self.set_robot_variable('config', self._config_now)
 
-    def config_init(self, json_file: str):
-        self._config_path = Path(json_file)
+    @robot_log_keyword
+    def config_init(self, json_file: str = None):
+        self._config_path = self._config_path if json_file is None else Path(json_file)
         if not self._config_path.is_file():
             self._config_path.touch()
+            self._config_path.write_text('{}')
         with self._config_path.open(mode='r') as f:
             config_text = f.read()
             config_dict = json.loads(config_text)
@@ -95,7 +98,7 @@ class BasicConfig(BasicCommon):
     def __config_write_file(self):
         temp_dict = {_k: _v for _k, _v in self._config_ori.items() if not _k.startswith('$')}
         with self._config_path.open(mode='w') as f:
-            json.dump(temp_dict, f)
+            json.dump(temp_dict, f, default=lambda x: x.value)
 
     def config_use_label(self, *labels, override=True, clear=False):
         if clear:
@@ -111,25 +114,30 @@ class BasicConfig(BasicCommon):
                     else:
                         self._config_now.setdefault(i, v)
 
+    @robot_log_keyword
     def config_update_key(self, key, value, label=None, ori=True):
-        self._config_now[key] = ConfigItem(value, label)
+        config_value = ConfigItem(value, label)
+        self._config_now[key] = config_value
         if ori:
-            self._config_ori[label][key] = value
-            with self._config_path.open(mode='w') as f:
-                json.dump(self._config_ori, f)
+            self._config_ori[label][key] = config_value
+            self._config_ori[f'${label}'][key] = config_value
+            self.__config_write_file()
 
+    @robot_log_keyword
     def config_show_now_value(self):
         for i, v in self._config_now.items():
             self.print(f'{i} : {v.value} [from {v.source} & root {v.root}]')
 
+    @robot_log_keyword
     def config_show_now_list(self):
         self.print(f'now config contains :[{",".join(self._config_label_list)}]')
 
-    def config_use_suit_case_list(self, override=True, clear=False):
-        suit_case_now = f'${self.__suit_case_label}'
-        if self.__suit_case_label in self._config_ori and suit_case_now in self._config_ori:
-            suit_case_key = self.get_suit_case_str()
-            self._config_ori[suit_case_now].setdefault(suit_case_key, [])
-            if suit_case_key in self._config_ori[suit_case_now]:
-                self.config_use_label(*self._config_ori[suit_case_now][suit_case_key], override=override, clear=clear)
-
+    @robot_log_keyword
+    def config_use_suite_case_list(self, override=True, clear=False):
+        suite_case_now = f'${self.__suite_case_label}'
+        if self.__suite_case_label not in self._config_ori:
+            self.__config_ori_update(self.__suite_case_label, {})
+        suite_case_key = self.get_suite_case_str()
+        if suite_case_key not in self._config_ori[suite_case_now]:
+            self.config_update_key(suite_case_key, [], self.__suite_case_label)
+        self.config_use_label(*self._config_ori[suite_case_now][suite_case_key].value, override=override, clear=clear)

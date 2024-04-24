@@ -6,8 +6,8 @@
 # Time          : 2024/2/13 11:58
 # Description   : 
 """
-from .action import BasicCalculate
+from .action import BasicCalculate, BasicConfig
 
 
-class RobotBasic(BasicCalculate):
+class RobotBasic(BasicCalculate, BasicConfig):
     pass
