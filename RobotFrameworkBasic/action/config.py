@@ -45,69 +45,82 @@ class ConfigItem:
         return temp
 
 
+class Config:
+    def __init__(self, json_file: str = None, print_func=None):
+        self._path = Path('config.json')
+        self._ori: Dict[str, Dict[str, Any]] = {}
+        self._now: Dict[str, ConfigItem] = {}
+        self._label_list: List[str] = []
+        self.init(json_file)
+        self.print = print if print_func is None else print_func
+
+    def init(self, json_file: str = None):
+        self._path = self._path if json_file is None else Path(json_file)
+        self.read()
+
+    def write(self):
+        temp_dict = {_k: _v for _k, _v in self._ori.items() if not _k.startswith('$')}
+        with self._path.open(mode='w') as f:
+            json.dump(temp_dict, f, default=lambda x: x.value)
+        temp_path = self._path.parent / f'${self._path.name}'
+        with temp_path.open(mode='w') as f:
+            json.dump(self._ori, f, default=lambda x: x.value)
+
+    def read(self):
+        if not self._path.is_file():
+            self._path.touch()
+            self._path.write_text('{}')
+        with self._path.open(mode='r') as f:
+            config_text = f.read()
+            config_dict = json.loads(config_text)
+        self.ori_init(config_dict)
+        self._now = {}
+        self._label_list = []
+
+    def ori_init(self, config_dict: Dict[str, Dict[str, Any]]):
+        self._ori = {}
+        for i, v in config_dict.items():
+            if i.startswith('$'):
+                continue
+            else:
+                self.ori_update_label(i, v, file=False)
+        self.write()
+
+    def ori_update_label(self, label: str, kv_dict: Dict[str, Any], override=True, file=True):
+        label_now = f'${label}'
+        self._ori[label] = {}
+        self._ori[label_now] = {}
+        for i, v in kv_dict.items():
+            self._ori[label][i] = v
+            if i == '__inherit__':
+                v_now = f'${v}'
+                if v in self._ori and v_now in self._ori:
+                    for j, w in self._ori[v_now].items():
+                        if override:
+                            self._ori[label_now][j] = w.inherit(label)
+                        else:
+                            self._ori[label_now].setdefault(j, w.inherit(label))
+                else:
+                    raise KeyError(f'config "{label}" try to inherit "{v}" which does not exist.')
+            else:
+                self._ori[label_now][i] = ConfigItem(v, label)
+        if file:
+            self.write()
+
+
 class BasicConfig(BasicCommon):
     __suite_case_label = '__suit_case__'
 
     def __init__(self):
         super().__init__()
-        self._config_path = Path('config.json')
-        self._config_ori: Dict[str, Dict[str, Any]] = {}
-        self._config_now: Dict[str, ConfigItem] = {}
-        self._config_label_list: List[str] = []
-        self.set_robot_variable('config', self._config_now)
+        self._config_config = Config(print_func=self.print)
+        self.set_robot_variable('config', self._config_config)
 
     @robot_log_keyword
     def config_init(self, json_file: str = None):
-        self._config_path = self._config_path if json_file is None else Path(json_file)
-        if not self._config_path.is_file():
-            self._config_path.touch()
-            self._config_path.write_text('{}')
-        with self._config_path.open(mode='r') as f:
-            config_text = f.read()
-            config_dict = json.loads(config_text)
-        self.__config_ori_init(config_dict)
-        self._config_now.clear()
-        self._config_label_list = []
+        self._config_config.init(json_file)
 
-    def __config_ori_init(self, config_dict: Dict[str, Dict[str, Any]]):
-        self._config_ori = {}
-        for i, v in config_dict.items():
-            if i.startswith('$'):
-                continue
-            else:
-                self.__config_ori_update(i, v, file=False)
-        self.__config_write_file()
-
-    def __config_ori_update(self, label: str, kv_dict: Dict[str, Any], override=True, file=True):
-        label_now = f'${label}'
-        self._config_ori[label] = {}
-        self._config_ori[label_now] = {}
-        for i, v in kv_dict.items():
-            self._config_ori[label][i] = v
-            if i == '__inherit__':
-                v_now = f'${v}'
-                if v in self._config_ori and v_now in self._config_ori:
-                    for j, w in self._config_ori[v_now].items():
-                        if override:
-                            self._config_ori[label_now][j] = w.inherit(label)
-                        else:
-                            self._config_ori[label_now].setdefault(j, w.inherit(label))
-                else:
-                    raise KeyError(f'config "{label}" try to inherit "{v}" which does not exist.')
-            else:
-                self._config_ori[label_now][i] = ConfigItem(v, label)
-        if file:
-            self.__config_write_file()
-
-    def __config_write_file(self):
-        temp_dict = {_k: _v for _k, _v in self._config_ori.items() if not _k.startswith('$')}
-        with self._config_path.open(mode='w') as f:
-            json.dump(temp_dict, f, default=lambda x: x.value)
-        temp_path = self._config_path.parent / f'${self._config_path.name}'
-        self.print(temp_path)
-        with temp_path.open(mode='w') as f:
-            json.dump(self._config_ori, f, default=lambda x: x.value)
-
+    @robot_log_keyword
     def config_use_label(self, *labels, override=True, clear=False):
         if clear:
             self._config_now.clear()
