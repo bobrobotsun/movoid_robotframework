@@ -46,6 +46,7 @@ class ConfigItem:
 
 
 class Config:
+    __suite_case_label = '__suit_case__'
 
     def __init__(self, json_file: str = None, print_func=None):
         self._path = Path('config.json')
@@ -111,7 +112,26 @@ class Config:
         if file:
             self.write()
 
-    def now_use_label(self, label, override=True):
+    def now_update_key(self, key, value, label=None, override=True, ori=True, file=True):
+        if key in self._now:
+            if override:
+                self._now[key].update(value, label)
+        else:
+            label = '__unknown__' if label is None else label
+            self._now[key] = ConfigItem(value, label)
+        if ori:
+            label_ori = self._now[key].root
+            label_now = f'${label_ori}'
+            self._ori.setdefault(label_ori, {})
+            self._ori.setdefault(label_now, {})
+            self._ori[label_ori][key] = self._now[key]
+            self._ori[label_now][key] = self._now[key]
+        if file:
+            self.write()
+
+    def now_use_label(self, label, override=True, clear=False):
+        if clear:
+            self.now_clear()
         label_now = f'${label}'
         if label in self._ori and label_now in self._ori:
             self._label_list.append(label)
@@ -126,55 +146,75 @@ class Config:
         self._label_list = []
 
     def show_now_value(self):
+        self.print('***** now values start *****')
         for i, v in self._now.items():
-            self.print(f'{i} : {v.value} [from {v.source} & root {v.root}]')
+            self.print(f'{i} : {v.value} ({type(v.value).__name__}) [from {v.source} & root {v.root}]')
+        self.print('***** now values end *****')
 
     def show_now_list(self):
         self.print(f'now config contains :[{",".join(self._label_list)}]')
 
-    def config_use_suite_case_list(self, override=True, clear=False):
+    def use_suite_case_list(self, suite_case_key, override=True, clear=False):
         suite_case_now = f'${self.__suite_case_label}'
         if self.__suite_case_label not in self._ori:
-            self.__config_ori_update(self.__suite_case_label, {})
-        suite_case_key = self.get_suite_case_str()
-        if suite_case_key not in self._config_ori[suite_case_now]:
-            self.config_update_key(suite_case_key, [], self.__suite_case_label)
-        self.config_use_label(*self._config_ori[suite_case_now][suite_case_key].value, override=override, clear=clear)
+            self.ori_update_label(self.__suite_case_label, {})
+        if suite_case_key not in self._ori[suite_case_now]:
+            self._ori[self.__suite_case_label][suite_case_key] = []
+            self._ori[suite_case_now][suite_case_key] = []
+            self.write()
+        for label in self._ori[suite_case_now][suite_case_key].value:
+            self.now_use_label(label, override=override, clear=clear)
 
 
 class BasicConfig(BasicCommon):
-    __suite_case_label = '__suit_case__'
 
     def __init__(self):
         super().__init__()
         self._config_config = Config(print_func=self.print)
-        self.set_robot_variable('config', self._config_config)
+        self.set_robot_variable('_config', self._config_config)
 
     @robot_log_keyword
     def config_init(self, json_file: str = None):
+        """
+        初始化json文件，相当于重新选择json文件并读取生效
+        :param json_file: json文件的路径，可以绝对可以相对，没有该文件的情况下保存会新建一个
+        """
         self._config_config.init(json_file)
 
     @robot_log_keyword
-    def config_use_label(self, *labels, override=True, clear=False):
-        if clear:
-            self._config_config.now_clear()
+    def config_use_label(self, *labels: str, override: bool = True, clear: bool = False):
+        """
+        选择相应的label生效
+        :param labels: 待选择的label，必须是json文件里的
+        :param override: 如果某个key已经存在，那么新数据是否覆盖就数据，默认覆盖
+        :param clear: 是否将之前生效的所有数据全部删除
+        """
         for label in labels:
-            self._config_config.now_use_label(label, override=override)
+            self._config_config.now_use_label(label, override=override, clear=clear)
 
     @robot_log_keyword
     def config_show_now_value(self):
+        """
+        显示当前使用的所有的键值
+        """
         self._config_config.show_now_value()
 
     @robot_log_keyword
     def config_show_now_list(self):
+        """
+        显示当前使用的所有的label名
+        """
         self._config_config.show_now_list()
 
     @robot_log_keyword
-    def config_use_suite_case_list(self, override=True, clear=False):
-        suite_case_now = f'${self.__suite_case_label}'
-        if self.__suite_case_label not in self._config_ori:
-            self.__config_ori_update(self.__suite_case_label, {})
-        suite_case_key = self.get_suite_case_str()
-        if suite_case_key not in self._config_ori[suite_case_now]:
-            self.config_update_key(suite_case_key, [], self.__suite_case_label)
-        self.config_use_label(*self._config_ori[suite_case_now][suite_case_key].value, override=override, clear=clear)
+    def config_use_suite_case_list(self, custom_key: str = '', override: bool = True, clear: bool = False):
+        """
+        使用特定key下的label list作为label并生效
+        :param custom_key: 如果想要自定义key的话，可以输入字符串，否则使用suite-case的字符串作为key
+        :param override: 如果使用的某个key已经存在，那么是否使用全新的参数进行覆盖，默认进行覆盖
+        :param clear: 是否把就有的所有参数全部清除，可以删除一些没有太有必要的参数
+        """
+        suite_case_key = custom_key if custom_key else self.get_suite_case_str()
+        self._config_config.use_suite_case_list(suite_case_key, override=override, clear=clear)
+        self._config_config.show_now_list()
+        self._config_config.show_now_value()
