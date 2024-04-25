@@ -46,6 +46,7 @@ class ConfigItem:
 
 
 class Config:
+
     def __init__(self, json_file: str = None, print_func=None):
         self._path = Path('config.json')
         self._ori: Dict[str, Dict[str, Any]] = {}
@@ -53,6 +54,9 @@ class Config:
         self._label_list: List[str] = []
         self.init(json_file)
         self.print = print if print_func is None else print_func
+
+    def __getitem__(self, item):
+        return self._now[item].value
 
     def init(self, json_file: str = None):
         self._path = self._path if json_file is None else Path(json_file)
@@ -107,6 +111,36 @@ class Config:
         if file:
             self.write()
 
+    def now_use_label(self, label, override=True):
+        label_now = f'${label}'
+        if label in self._ori and label_now in self._ori:
+            self._label_list.append(label)
+            for i, v in self._ori[label_now].items():
+                if override:
+                    self._now[i] = v
+                else:
+                    self._now.setdefault(i, v)
+
+    def now_clear(self):
+        self._now = {}
+        self._label_list = []
+
+    def show_now_value(self):
+        for i, v in self._now.items():
+            self.print(f'{i} : {v.value} [from {v.source} & root {v.root}]')
+
+    def show_now_list(self):
+        self.print(f'now config contains :[{",".join(self._label_list)}]')
+
+    def config_use_suite_case_list(self, override=True, clear=False):
+        suite_case_now = f'${self.__suite_case_label}'
+        if self.__suite_case_label not in self._ori:
+            self.__config_ori_update(self.__suite_case_label, {})
+        suite_case_key = self.get_suite_case_str()
+        if suite_case_key not in self._config_ori[suite_case_now]:
+            self.config_update_key(suite_case_key, [], self.__suite_case_label)
+        self.config_use_label(*self._config_ori[suite_case_now][suite_case_key].value, override=override, clear=clear)
+
 
 class BasicConfig(BasicCommon):
     __suite_case_label = '__suit_case__'
@@ -123,35 +157,17 @@ class BasicConfig(BasicCommon):
     @robot_log_keyword
     def config_use_label(self, *labels, override=True, clear=False):
         if clear:
-            self._config_now.clear()
-            self._config_label_list = []
+            self._config_config.now_clear()
         for label in labels:
-            label_now = f'${label}'
-            if label in self._config_ori and label_now in self._config_ori:
-                self._config_label_list.append(label)
-                for i, v in self._config_ori[label_now].items():
-                    if override:
-                        self._config_now[i] = v
-                    else:
-                        self._config_now.setdefault(i, v)
-
-    @robot_log_keyword
-    def config_update_key(self, key, value, label=None, ori=True):
-        config_value = ConfigItem(value, label)
-        self._config_now[key] = config_value
-        if ori:
-            self._config_ori[label][key] = config_value
-            self._config_ori[f'${label}'][key] = config_value
-            self.__config_write_file()
+            self._config_config.now_use_label(label, override=override)
 
     @robot_log_keyword
     def config_show_now_value(self):
-        for i, v in self._config_now.items():
-            self.print(f'{i} : {v.value} [from {v.source} & root {v.root}]')
+        self._config_config.show_now_value()
 
     @robot_log_keyword
     def config_show_now_list(self):
-        self.print(f'now config contains :[{",".join(self._config_label_list)}]')
+        self._config_config.show_now_list()
 
     @robot_log_keyword
     def config_use_suite_case_list(self, override=True, clear=False):
