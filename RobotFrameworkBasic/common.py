@@ -6,6 +6,7 @@
 # Time          : 2024/2/13 12:04
 # Description   : 
 """
+import base64
 import json
 
 from robot.libraries.BuiltIn import BuiltIn
@@ -126,3 +127,9 @@ class BasicCommon:
             if temp is not None:
                 sc_list.append(self.get_robot_variable('TEST NAME'))
         return join_str.join(sc_list)
+
+    @robot_log_keyword
+    def log_show_image(self, image_path: str):
+        with open(image_path, mode='rb') as f:
+            img_str = base64.b64encode(f.read()).decode()
+            self.print(f'<img src="data:image/png;base64,{img_str}">', html=True)
