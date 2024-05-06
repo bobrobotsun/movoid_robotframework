@@ -8,6 +8,8 @@
 """
 import base64
 import json
+import traceback
+from typing import Union
 
 from robot.libraries.BuiltIn import BuiltIn
 
@@ -133,3 +135,44 @@ class BasicCommon:
         with open(image_path, mode='rb') as f:
             img_str = base64.b64encode(f.read()).decode()
             self.print(f'<img src="data:image/png;base64,{img_str}">', html=True)
+
+    @robot_log_keyword
+    def robot_check_param(self, param_str: str, param_style: Union[str, type], default=None, error=False):
+        if type(param_style) is str:
+            param_style_str = param_style.lower()
+        elif type(param_style) is type:
+            param_style_str = param_style.__name__
+        else:
+            error_text = f'what is <{param_style}>({type(param_style).__name__}) which is not str or type?'
+            if error:
+                raise TypeError(error_text)
+            else:
+                return default
+        self.print(f'try to change <{param_str}> to {param_style}')
+        try:
+            if param_style_str in ('str',):
+                re_value = str(param_str)
+            elif param_style_str in ('int',):
+                re_value = int(param_str)
+            elif param_style_str in ('float',):
+                re_value = float(param_str)
+            elif param_style_str in ('bool',):
+                if param_str in ('true',):
+                    re_value = True
+                elif param_str in ('false',):
+                    re_value = False
+                else:
+                    self.print(f'{param_str} is not a traditional bool, we use forced conversion.')
+                    re_value = bool(param_str)
+            else:
+                re_value = eval(f'{param_style_str}({param_str})')
+        except Exception as err:
+            error_text = f'something wrong happened when we change <{param_str}> to <{param_style_str}>:\n{traceback.format_exc()}'
+            if error:
+                self.error(error_text)
+                raise err
+            else:
+                self.print(error_text)
+                self.print(f'we use default value:<{default}>({type(default).__name__})')
+                re_value = default
+        return re_value
