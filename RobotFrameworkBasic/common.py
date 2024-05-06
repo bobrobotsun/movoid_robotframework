@@ -137,7 +137,7 @@ class BasicCommon:
             self.print(f'<img src="data:image/png;base64,{img_str}">', html=True)
 
     @robot_log_keyword
-    def robot_check_param(self, param_str: str, param_style: Union[str, type], default=None, error=False):
+    def robot_check_param(self, param_str: object, param_style: Union[str, type], default=None, error=False):
         if type(param_style) is str:
             param_style_str = param_style.lower()
         elif type(param_style) is type:
@@ -148,6 +148,9 @@ class BasicCommon:
                 raise TypeError(error_text)
             else:
                 return default
+        if type(param_str).__name__ == param_style_str:
+            self.print('style is correct, we do not change it.')
+            return param_str
         self.print(f'try to change <{param_str}> to {param_style}')
         try:
             if param_style_str in ('str',):
