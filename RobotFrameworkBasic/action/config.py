@@ -39,7 +39,7 @@ class ConfigItem:
         self._value = self._value if value is None else value
         self._source = self._source if source is None else source
 
-    def inherit(self, source: str) -> 'ConfigItem':
+    def inherit(self, source: str = None) -> 'ConfigItem':
         temp = ConfigItem(self._value, self._source)
         temp.update(source=source)
         return temp
@@ -66,10 +66,11 @@ class Config:
     def write(self):
         temp_dict = {_k: _v for _k, _v in self._ori.items() if not _k.startswith('$')}
         with self._path.open(mode='w') as f:
-            json.dump(temp_dict, f, default=lambda x: x.value)
+            json.dump(temp_dict, f, default=lambda x: x.value, indent=2)
         temp_path = self._path.parent / f'${self._path.name}'
+        temp_dict2 = {_k: _v for _k, _v in self._ori.items() if _k.startswith('$')}
         with temp_path.open(mode='w') as f:
-            json.dump(self._ori, f, default=lambda x: x.value)
+            json.dump(temp_dict2, f, default=lambda x: x.value, indent=2)
 
     def read(self):
         if not self._path.is_file():
@@ -96,7 +97,8 @@ class Config:
         self._ori[label] = {}
         self._ori[label_now] = {}
         for i, v in kv_dict.items():
-            self._ori[label][i] = v
+            self._ori[label][i] = ConfigItem(v, label)
+            self._ori[label_now][i] = self._ori[label][i].inherit()
             if i == '__inherit__':
                 v_now = f'${v}'
                 if v in self._ori and v_now in self._ori:
@@ -107,8 +109,6 @@ class Config:
                             self._ori[label_now].setdefault(j, w.inherit(label))
                 else:
                     raise KeyError(f'config "{label}" try to inherit "{v}" which does not exist.')
-            else:
-                self._ori[label_now][i] = ConfigItem(v, label)
         if file:
             self.write()
 
@@ -159,8 +159,8 @@ class Config:
         if self.__suite_case_label not in self._ori:
             self.ori_update_label(self.__suite_case_label, {})
         if suite_case_key not in self._ori[suite_case_now]:
-            self._ori[self.__suite_case_label][suite_case_key] = []
-            self._ori[suite_case_now][suite_case_key] = []
+            self._ori[self.__suite_case_label][suite_case_key] = ConfigItem([], self.__suite_case_label)
+            self._ori[suite_case_now][suite_case_key] = self._ori[self.__suite_case_label][suite_case_key]
             self.write()
         for label in self._ori[suite_case_now][suite_case_key].value:
             self.now_use_label(label, override=override, clear=clear)
