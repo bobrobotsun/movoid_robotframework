@@ -7,6 +7,7 @@
 # Description   : 
 """
 import json
+import platform
 from pathlib import Path
 from typing import Dict, Any, List
 
@@ -47,6 +48,7 @@ class ConfigItem:
 
 class Config:
     __suite_case_label = '__suit_case__'
+    __suite_case_platform_label = f'__suit_case_{platform.system()}__'
 
     def __init__(self, json_file: str = None, print_func=None):
         self._path = Path('config.json')
@@ -156,14 +158,32 @@ class Config:
 
     def use_suite_case_list(self, suite_case_key, override=True, clear=False):
         suite_case_now = f'${self.__suite_case_label}'
+        suite_case_platform_now = f'${self.__suite_case_platform_label}'
         if self.__suite_case_label not in self._ori:
             self.ori_update_label(self.__suite_case_label, {})
-        if suite_case_key not in self._ori[suite_case_now]:
+        if self.__suite_case_platform_label not in self._ori:
+            self.ori_update_label(self.__suite_case_platform_label, {})
+        should_write = False
+        if suite_case_key not in self._ori[self.__suite_case_label]:
             self._ori[self.__suite_case_label][suite_case_key] = ConfigItem([], self.__suite_case_label)
+            should_write = True
+        if suite_case_key not in self._ori[suite_case_now]:
             self._ori[suite_case_now][suite_case_key] = self._ori[self.__suite_case_label][suite_case_key]
+            should_write = True
+        if suite_case_key not in self._ori[self.__suite_case_platform_label]:
+            self._ori[self.__suite_case_platform_label][suite_case_key] = ConfigItem([], self.__suite_case_platform_label)
+            should_write = True
+        if suite_case_key not in self._ori[suite_case_platform_now]:
+            self._ori[suite_case_platform_now][suite_case_key] = self._ori[self.__suite_case_platform_label][suite_case_key]
+            should_write = True
+        if should_write:
             self.write()
+        if clear:
+            self.now_clear()
         for label in self._ori[suite_case_now][suite_case_key].value:
-            self.now_use_label(label, override=override, clear=clear)
+            self.now_use_label(label, override=override, clear=False)
+        for label in self._ori[suite_case_platform_now][suite_case_key].value:
+            self.now_use_label(label, override=override, clear=False)
 
 
 class BasicConfig(BasicCommon):
