@@ -58,6 +58,9 @@ class Config:
         self.init(json_file)
         self.print = print if print_func is None else print_func
 
+    def __contains__(self, item):
+        return item in self._now
+
     def __getitem__(self, item):
         return self._now[item].value
 
