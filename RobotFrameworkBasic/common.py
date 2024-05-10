@@ -28,6 +28,7 @@ class BasicCommon:
         self.built = BuiltIn()
         self.warn_list = []
         self.output_dir = getattr(self, 'output_dir', None)
+        self._robot_variable = {}
 
     if VERSION:
         print_function = {
@@ -40,9 +41,60 @@ class BasicCommon:
         def print(self, *args, html=False, level='INFO', sep=' ', end='\n'):
             print_text = str(sep).join([str(_) for _ in args]) + str(end)
             self.print_function.get(level.upper(), logger.info)(print_text, html)
+
+        @robot_log_keyword
+        def get_robot_variable(self, variable_name: str, default=None):
+            return self.built.get_variable_value("${" + variable_name + "}", default)
+
+        @robot_log_keyword
+        def set_robot_variable(self, variable_name: str, value):
+            self.built.set_global_variable("${" + variable_name + "}", value)
+
+        @robot_log_keyword
+        def get_suite_case_str(self, join_str: str = '-', suite: bool = True, case: bool = True, suite_ori: str = ''):
+            """
+            获取当前的suit、case的名称
+            :param join_str: suite和case的连接字符串，默认为-
+            :param suite: 是否显示suite名
+            :param case: 是否显示case名，如果不是case内，即使True也不显示
+            :param suite_ori: suite名的最高suite是不是使用原名，如果设置为空，那么使用原名
+            :return: 连接好的字符串
+            """
+            sc_list = []
+            if suite:
+                suite = self.get_robot_variable('SUITE NAME')
+                if suite_ori:
+                    exe_dir = self.get_robot_variable('EXECDIR')
+                    main_suite_len = len(pathlib.Path(exe_dir).name)
+                    if len(suite) >= main_suite_len:
+                        suite_body = suite[main_suite_len:]
+                    else:
+                        suite_body = ''
+                    suite_head = suite_ori
+                    suite = suite_head + suite_body
+                sc_list.append(suite)
+            if case:
+                temp = self.get_robot_variable('TEST NAME')
+                if temp is not None:
+                    sc_list.append(self.get_robot_variable('TEST NAME'))
+            return join_str.join(sc_list)
     else:
         def print(self, *args, html=False, level='INFO', sep=' ', end='\n'):
             print(*args, sep=sep, end=end)
+
+        def get_robot_variable(self, variable_name: str, default=None):
+            return self._robot_variable.get(variable_name, default)
+
+        def set_robot_variable(self, variable_name: str, value):
+            self._robot_variable[variable_name] = value
+
+        def get_suite_case_str(self, join_str: str = '-', suite: bool = True, case: bool = True, suite_ori: str = ''):
+            sc_list = []
+            if suite:
+                sc_list.append('suite')
+            if case:
+                sc_list.append('case')
+            return join_str.join(sc_list)
 
     def debug(self, *args, html=False, sep=' ', end='\n'):
         self.print(*args, html=html, level='DEBUG', sep=sep, end=end)
@@ -55,14 +107,6 @@ class BasicCommon:
 
     def error(self, *args, html=False, sep=' ', end='\n'):
         self.print(*args, html=html, level='ERROR', sep=sep, end=end)
-
-    @robot_log_keyword
-    def get_robot_variable(self, variable_name: str, default=None):
-        return self.built.get_variable_value("${" + variable_name + "}", default)
-
-    @robot_log_keyword
-    def set_robot_variable(self, variable_name: str, value):
-        self.built.set_global_variable("${" + variable_name + "}", value)
 
     @robot_log_keyword
     def analyse_json(self, value):
@@ -112,35 +156,6 @@ class BasicCommon:
 
     def always_true(self):
         return True
-
-    @robot_log_keyword
-    def get_suite_case_str(self, join_str: str = '-', suite: bool = True, case: bool = True, suite_ori: str = ''):
-        """
-        获取当前的suit、case的名称
-        :param join_str: suite和case的连接字符串，默认为-
-        :param suite: 是否显示suite名
-        :param case: 是否显示case名，如果不是case内，即使True也不显示
-        :param suite_ori: suite名的最高suite是不是使用原名，如果设置为空，那么使用原名
-        :return: 连接好的字符串
-        """
-        sc_list = []
-        if suite:
-            suite = self.get_robot_variable('SUITE NAME')
-            if suite_ori:
-                exe_dir = self.get_robot_variable('EXECDIR')
-                main_suite_len = len(pathlib.Path(exe_dir).name)
-                if len(suite) >= main_suite_len:
-                    suite_body = suite[main_suite_len:]
-                else:
-                    suite_body = ''
-                suite_head = suite_ori
-                suite = suite_head + suite_body
-            sc_list.append(suite)
-        if case:
-            temp = self.get_robot_variable('TEST NAME')
-            if temp is not None:
-                sc_list.append(self.get_robot_variable('TEST NAME'))
-        return join_str.join(sc_list)
 
     @robot_log_keyword
     def log_show_image(self, image_path: str):
