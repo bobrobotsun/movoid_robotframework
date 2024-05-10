@@ -64,6 +64,9 @@ class Config:
     def __getitem__(self, item):
         return self._now[item].value
 
+    def get(self, item, default=None):
+        return self._now[item].value if item in self._now else default
+
     def init(self, json_file: str = None, new: bool = True):
         self._path = self._path if json_file is None else Path(json_file)
         if new or self._path.exists():
