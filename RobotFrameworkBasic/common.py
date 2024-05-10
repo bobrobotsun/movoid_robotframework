@@ -8,6 +8,7 @@
 """
 import base64
 import json
+import pathlib
 import traceback
 from typing import Union
 
@@ -113,17 +114,28 @@ class BasicCommon:
         return True
 
     @robot_log_keyword
-    def get_suite_case_str(self, join_str: str = '-', suite: bool = True, case: bool = True):
+    def get_suite_case_str(self, join_str: str = '-', suite: bool = True, case: bool = True, suite_ori: str = ''):
         """
         获取当前的suit、case的名称
         :param join_str: suite和case的连接字符串，默认为-
         :param suite: 是否显示suite名
         :param case: 是否显示case名，如果不是case内，即使True也不显示
+        :param suite_ori: suite名的最高suite是不是使用原名，如果设置为空，那么使用原名
         :return: 连接好的字符串
         """
         sc_list = []
         if suite:
-            sc_list.append(self.get_robot_variable('SUITE NAME'))
+            suite = self.get_robot_variable('SUITE NAME')
+            if suite_ori:
+                exe_dir = self.get_robot_variable('EXECDIR')
+                main_suite_len = len(pathlib.Path(exe_dir).name)
+                if len(suite) >= main_suite_len:
+                    suite_body = suite[main_suite_len:]
+                else:
+                    suite_body = ''
+                suite_head = suite_ori
+                suite = suite_head + suite_body
+            sc_list.append(suite)
         if case:
             temp = self.get_robot_variable('TEST NAME')
             if temp is not None:

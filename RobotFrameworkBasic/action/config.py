@@ -51,11 +51,11 @@ class Config:
     __suite_case_platform_label = f'__suit_case_{platform.system()}__'
 
     def __init__(self, json_file: str = None, print_func=None):
-        self._path = Path('config.json')
+        self._path = Path('robot_config.json')
         self._ori: Dict[str, Dict[str, Any]] = {}
         self._now: Dict[str, ConfigItem] = {}
         self._label_list: List[str] = []
-        self.init(json_file)
+        self.init(json_file, False)
         self.print = print if print_func is None else print_func
 
     def __contains__(self, item):
@@ -64,10 +64,11 @@ class Config:
     def __getitem__(self, item):
         return self._now[item].value
 
-    def init(self, json_file: str = None):
+    def init(self, json_file: str = None, new: bool = True):
         self._path = self._path if json_file is None else Path(json_file)
-        self.read()
-        self.use_suite_case_list('__init__')
+        if new or self._path.exists():
+            self.read()
+            self.use_suite_case_list('__init__')
 
     def write(self):
         temp_dict = {_k: _v for _k, _v in self._ori.items() if not _k.startswith('$')}
@@ -238,7 +239,7 @@ class BasicConfig(BasicCommon):
         :param override: 如果使用的某个key已经存在，那么是否使用全新的参数进行覆盖，默认进行覆盖
         :param clear: 是否把就有的所有参数全部清除，可以删除一些没有太有必要的参数
         """
-        suite_case_key = custom_key if custom_key else self.get_suite_case_str()
+        suite_case_key = custom_key if custom_key else self.get_suite_case_str(suite_ori='main')
         self._config_config.use_suite_case_list(suite_case_key, override=override, clear=clear)
         self._config_config.show_now_list()
         self._config_config.show_now_value()
