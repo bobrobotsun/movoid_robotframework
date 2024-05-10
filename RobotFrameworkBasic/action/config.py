@@ -195,8 +195,8 @@ class BasicConfig(BasicCommon):
 
     def __init__(self):
         super().__init__()
-        self._config_config = Config(print_func=self.print)
-        self.set_robot_variable('_config', self._config_config)
+        self.config = Config(print_func=self.print)
+        self.set_robot_variable('config', self.config)
 
     @robot_log_keyword
     def config_init(self, json_file: str = None):
@@ -204,7 +204,7 @@ class BasicConfig(BasicCommon):
         初始化json文件，相当于重新选择json文件并读取生效
         :param json_file: json文件的路径，可以绝对可以相对，没有该文件的情况下保存会新建一个
         """
-        self._config_config.init(json_file)
+        self.config.init(json_file)
 
     @robot_log_keyword
     def config_use_label(self, *labels: str, override: bool = True, clear: bool = False):
@@ -215,21 +215,21 @@ class BasicConfig(BasicCommon):
         :param clear: 是否将之前生效的所有数据全部删除
         """
         for label in labels:
-            self._config_config.now_use_label(label, override=override, clear=clear)
+            self.config.now_use_label(label, override=override, clear=clear)
 
     @robot_log_keyword
     def config_show_now_value(self):
         """
         显示当前使用的所有的键值
         """
-        self._config_config.show_now_value()
+        self.config.show_now_value()
 
     @robot_log_keyword
     def config_show_now_list(self):
         """
         显示当前使用的所有的label名
         """
-        self._config_config.show_now_list()
+        self.config.show_now_list()
 
     @robot_log_keyword
     def config_use_suite_case_list(self, custom_key: str = '', override: bool = True, clear: bool = False):
@@ -240,6 +240,6 @@ class BasicConfig(BasicCommon):
         :param clear: 是否把就有的所有参数全部清除，可以删除一些没有太有必要的参数
         """
         suite_case_key = custom_key if custom_key else self.get_suite_case_str(suite_ori='main')
-        self._config_config.use_suite_case_list(suite_case_key, override=override, clear=clear)
-        self._config_config.show_now_list()
-        self._config_config.show_now_value()
+        self.config.use_suite_case_list(suite_case_key, override=override, clear=clear)
+        self.config.show_now_list()
+        self.config.show_now_value()
