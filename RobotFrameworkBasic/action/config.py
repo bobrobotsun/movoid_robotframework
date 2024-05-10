@@ -67,6 +67,7 @@ class Config:
     def init(self, json_file: str = None):
         self._path = self._path if json_file is None else Path(json_file)
         self.read()
+        self.use_suite_case_list('__init__')
 
     def write(self):
         temp_dict = {_k: _v for _k, _v in self._ori.items() if not _k.startswith('$')}
