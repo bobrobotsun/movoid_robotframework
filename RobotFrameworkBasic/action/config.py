@@ -208,6 +208,7 @@ class BasicConfig(BasicCommon):
         :param json_file: json文件的路径，可以绝对可以相对，没有该文件的情况下保存会新建一个
         """
         self.config.init(json_file)
+        return self.config
 
     @robot_log_keyword
     def config_use_label(self, *labels: str, override: bool = True, clear: bool = False):
