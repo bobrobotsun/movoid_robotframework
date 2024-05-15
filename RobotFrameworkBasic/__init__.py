@@ -8,7 +8,7 @@
 """
 from .version import RUN, VERSION
 from .main import RobotBasic
-from .decorator import robot_log_keyword, do_until_check, do_when_error, check_parameters_type
+from .decorator import robot_log_keyword, do_until_check, wait_until_stable, do_when_error, check_parameters_type
 from .error import RfError
 
 
