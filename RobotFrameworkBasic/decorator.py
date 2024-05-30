@@ -141,7 +141,6 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                     do_interval=_do_interval,  # noqa
                     check_interval=_check_interval,  # noqa
                     error=_error):  # noqa
-            fail_print = []
             do_text = f'do {do_function.__name__}{do_kwargs}'
             check_text = f'check {check_function.__name__}{check_kwargs}'
             if init_check:
@@ -156,7 +155,6 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                 except Exception as err:
                     print_text = f'init {check_text} error:{err}'
                     self.print(print_text)
-                    fail_print.append(print_text + '\n' + traceback.format_exc())
             time.sleep(init_sleep)
             total_time = 0
             start_time_point = time.time()
@@ -169,7 +167,6 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                 except Exception as err:
                     print_text = '{:.3f} second {} time {} error:{}'.format(time.time() - start_time_point, loop_time, do_text, err)
                     self.print(print_text)
-                    fail_print.append(print_text + '\n' + traceback.format_exc())
                 time.sleep(wait_before_check)
                 check_time = 0
                 check_time_point = time.time()
@@ -188,7 +185,6 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                     except Exception as err:
                         print_text = '{:.3f}/{:.3f} second {}-{} time {} error:{}'.format(time.time() - start_time_point, time.time() - check_time_point, loop_time, check_loop_time, check_text, err)
                         self.print(print_text)
-                        fail_print.append(print_text + '\n' + traceback.format_exc())
                     check_interval_time = time.time() - check_interval_time_point
                     if check_interval_time < check_interval:
                         time.sleep(check_interval - check_interval_time)
@@ -200,7 +196,6 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
             else:
                 total_time = time.time() - start_time_point
                 print_text = '{:.3f} second {} time {} all fail/error.do_until_check fail.'.format(total_time, loop_time, check_text)
-                self.print(*fail_print, sep='\n')
                 if error:
                     raise AssertionError(print_text)
                 else:
@@ -246,7 +241,6 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                     stable_time=_stable_time,  # noqa
                     check_interval=_check_interval,  # noqa
                     error=_error):  # noqa
-            fail_print = []
             check_text = f'check {check_function.__name__}{check_kwargs}'
             if init_check:
                 try:
@@ -259,7 +253,6 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                 except Exception as err:
                     print_text = f'init {check_text} error:{err}'
                     self.print(print_text)
-                    fail_print.append(print_text + '\n' + traceback.format_exc())
             time.sleep(init_sleep)
             total_time = 0
             start_time_point = time.time()
@@ -288,7 +281,6 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                 except Exception as err:
                     print_text = '{:.3f} second {} time {} error:{}'.format(time.time() - start_time_point, loop_time, check_text, err)
                     self.print(print_text)
-                    fail_print.append(print_text + '\n' + traceback.format_exc())
                     pass_time = 0
                 total_interval_time = time.time() - total_interval_time_point
                 if total_interval_time < check_interval:
@@ -297,7 +289,6 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
             else:
                 total_time = time.time() - start_time_point
                 print_text = '{:.3f} second {} time {} all fail/error.do_until_check fail.'.format(total_time, loop_time, check_text)
-                self.print(*fail_print, sep='\n')
                 if error:
                     raise AssertionError(print_text)
                 else:
