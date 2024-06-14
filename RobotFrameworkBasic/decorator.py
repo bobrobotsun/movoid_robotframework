@@ -34,7 +34,7 @@ if VERSION:
             def dec(func):
                 @wraps(func)
                 def wrapper(*args, _return_when_error=True, **kwargs):
-                    arg_dict = analyse_args_value_from_function(func, *args, **kwargs)
+                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=True, **kwargs)
                     data = RunningKeyword(func.__name__)
                     result = ResultKeyword(func.__name__,
                                            args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
@@ -90,7 +90,7 @@ if VERSION:
             def dec(func):
                 @wraps(func)
                 def wrapper(*args, _return_when_error=True, **kwargs):
-                    arg_dict = analyse_args_value_from_function(func, *args, **kwargs)
+                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=True, **kwargs)
                     data = RunningKeyword(func.__name__)
                     result = ResultKeyword(func.__name__,
                                            args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
@@ -136,8 +136,8 @@ else:
         def dec(func):
             @wraps(func)
             def wrapper(*args, _return_when_error=True, **kwargs):
-                arg_dict = analyse_args_value_from_function(func, *args, **kwargs)
-                print(*[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'])
+                arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=True, **kwargs)
+                print(func.__name__, *[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'])
                 re_value = None
                 temp_error = None
                 try:
@@ -150,7 +150,7 @@ else:
                 if temp_error is not None:
                     raise temp_error
                 else:
-                    print(f'{re_value}({type(re_value).__name__}):is return value')
+                    print(f'{func.__name__}: {re_value}({type(re_value).__name__}):is return value')
                     return re_value
 
             setattr(func, '__robot_log', True)
