@@ -25,36 +25,50 @@ if VERSION:
         from robot.running.outputcapture import OutputCapturer
 
 
-        def _robot_log_keyword(func):
-            @wraps(func)
-            def wrapper(*args, **kwargs):
-                arg_dict = analyse_args_value_from_function(func, *args, **kwargs)
-                data = RunningKeyword(func.__name__)
-                result = ResultKeyword(func.__name__,
-                                       args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
-                                       doc=None if func.__doc__ is None else func.__doc__.replace('\n', '\n\n'))
-                result.starttime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
-                combine = ModelCombiner(data, result)
-                LOGGER.start_keyword(combine)
-                temp_error = None
-                with OutputCapturer():
-                    try:
-                        re_value = func(*args, **kwargs)
-                    except Exception as err:
-                        result.status = 'FAIL'
-                        logger.info(traceback.format_exc())
-                        temp_error = err
-                    else:
-                        logger.info(f'{re_value}({type(re_value).__name__}):is return value')
-                        result.status = 'PASS'
-                result.endtime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
-                LOGGER.end_keyword(combine)
-                if result.status == 'FAIL':
-                    raise temp_error
-                else:
-                    return re_value
+        def _robot_log_keyword(return_is_fail=None):
+            if return_is_fail is None:
+                return_is_fail = []
+            elif callable(return_is_fail):
+                return _robot_log_keyword()(return_is_fail)
+            else:
+                return_is_fail = list(return_is_fail)
 
-            return wrapper
+            def dec(func):
+                @wraps(func)
+                def wrapper(*args, **kwargs):
+                    arg_dict = analyse_args_value_from_function(func, *args, **kwargs)
+                    data = RunningKeyword(func.__name__)
+                    result = ResultKeyword(func.__name__,
+                                           args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
+                                           doc=None if func.__doc__ is None else func.__doc__.replace('\n', '\n\n'))
+                    result.starttime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
+                    combine = ModelCombiner(data, result)
+                    LOGGER.start_keyword(combine)
+                    temp_error = None
+                    with OutputCapturer():
+                        try:
+                            re_value = func(*args, **kwargs)
+                        except Exception as err:
+                            result.status = 'FAIL'
+                            logger.info(traceback.format_exc())
+                            temp_error = err
+                        else:
+                            logger.info(f'{re_value}({type(re_value).__name__}):is return value')
+                            if re_value in return_is_fail:
+                                result.status = 'FAIL'
+                            else:
+                                result.status = 'PASS'
+                    result.endtime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
+                    LOGGER.end_keyword(combine)
+                    if temp_error is not None:
+                        raise temp_error
+                    else:
+                        return re_value
+
+                setattr(wrapper, '__robot_log', True)
+                return wrapper
+
+            return dec
     elif VERSION == '7':
         import datetime
         import traceback
@@ -65,40 +79,61 @@ if VERSION:
         from robot.running.outputcapture import OutputCapturer
 
 
-        def _robot_log_keyword(func):
-            @wraps(func)
-            def wrapper(*args, **kwargs):
-                arg_dict = analyse_args_value_from_function(func, *args, **kwargs)
-                data = RunningKeyword(func.__name__)
-                result = ResultKeyword(func.__name__,
-                                       args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
-                                       doc=None if func.__doc__ is None else func.__doc__.replace('\n', '\n\n'))
-                result.start_time = datetime.datetime.now()
-                LOGGER.start_keyword(data, result)
-                temp_error = None
-                with OutputCapturer():
-                    try:
-                        re_value = func(*args, **kwargs)
-                        logger.info(f'{re_value}({type(re_value).__name__}):is return value')
-                    except Exception as err:
-                        result.status = 'FAIL'
-                        logger.info(traceback.format_exc())
-                        temp_error = err
-                    else:
-                        result.status = 'PASS'
-                result.end_time = datetime.datetime.now()
-                LOGGER.end_keyword(data, result)
-                if result.status == 'FAIL':
-                    raise temp_error
-                else:
-                    return re_value
+        def _robot_log_keyword(return_is_fail=None):
+            if return_is_fail is None:
+                return_is_fail = []
+            elif callable(return_is_fail):
+                return _robot_log_keyword()(return_is_fail)
+            else:
+                return_is_fail = list(return_is_fail)
 
-            return wrapper
+            def dec(func):
+                @wraps(func)
+                def wrapper(*args, **kwargs):
+                    arg_dict = analyse_args_value_from_function(func, *args, **kwargs)
+                    data = RunningKeyword(func.__name__)
+                    result = ResultKeyword(func.__name__,
+                                           args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
+                                           doc=None if func.__doc__ is None else func.__doc__.replace('\n', '\n\n'))
+                    result.start_time = datetime.datetime.now()
+                    LOGGER.start_keyword(data, result)
+                    temp_error = None
+                    with OutputCapturer():
+                        try:
+                            re_value = func(*args, **kwargs)
+                            logger.info(f'{re_value}({type(re_value).__name__}):is return value')
+                        except Exception as err:
+                            result.status = 'FAIL'
+                            logger.info(traceback.format_exc())
+                            temp_error = err
+                        else:
+                            if re_value in return_is_fail:
+                                result.status = 'FAIL'
+                            else:
+                                result.status = 'PASS'
+                    result.end_time = datetime.datetime.now()
+                    LOGGER.end_keyword(data, result)
+                    if temp_error is not None:
+                        raise temp_error
+                    else:
+                        return re_value
+
+                setattr(wrapper, '__robot_log', True)
+                return wrapper
+
+            return dec
     else:
         raise ImportError('robotframework should be 6 or 7. please pip install robotframework again')
 else:
-    def _robot_log_keyword(func):
-        return func
+    def _robot_log_keyword(return_is_fail=None):
+        if callable(return_is_fail):
+            return _robot_log_keyword()(return_is_fail)
+
+        def dec(func):
+            setattr(func, '__robot_log', True)
+            return func
+
+        return dec
 
 robot_log_keyword = _robot_log_keyword
 
@@ -142,19 +177,22 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                     check_interval=_check_interval,  # noqa
                     error=_error):  # noqa
             do_text = f'do {do_function.__name__}{do_kwargs}'
+            self.print(f'do action:{do_text}')
             check_text = f'check {check_function.__name__}{check_kwargs}'
+            self.print(f'check action:{check_text}')
             if init_check:
                 try:
                     check_bool = init_check_function(**check_kwargs)
                     if check_bool:
-                        self.print(f'init {check_text} pass.do_until_check end.')
+                        print_text = f'pass init {check_text}.do_until_check end.'
                         return True
                     else:
-                        print_text = f'init {check_text} fail.'
-                        self.print(print_text)
+                        print_text = f'fail init {check_text}.'
                 except Exception as err:
-                    print_text = f'init {check_text} error:{err}'
-                    self.print(print_text)
+                    print_text = f'error init {check_text}:{err}'
+                finally:
+                    if not getattr(init_check_function, '__robot_log', False):
+                        self.print(print_text)
             time.sleep(init_sleep)
             total_time = 0
             start_time_point = time.time()
@@ -164,9 +202,12 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                 loop_time += 1
                 try:
                     do_function(**do_kwargs)
+                    print_text = f'end do {time.time() - start_time_point:.3f} second {loop_time} time'
                 except Exception as err:
-                    print_text = '{:.3f} second {} time {} error:{}'.format(time.time() - start_time_point, loop_time, do_text, err)
-                    self.print(print_text)
+                    print_text = f'error do {time.time() - start_time_point:.3f} second {loop_time} time :{err}'
+                finally:
+                    if not getattr(do_function, '__robot_log', False):
+                        self.print(print_text)
                 time.sleep(wait_before_check)
                 check_time = 0
                 check_time_point = time.time()
@@ -176,15 +217,18 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                     check_loop_time += 1
                     try:
                         check_bool = check_function(**check_kwargs)
+                        time_now = time.time()
                         if check_bool:
-                            self.print('{:.3f}/{:.3f} second {}-{} time {} pass.do until check end.'.format(time.time() - start_time_point, time.time() - check_time_point, loop_time, check_loop_time, check_text))
+                            print_text = f'pass check {time_now - start_time_point:.3f}/{time_now - check_time_point:.3f} second {loop_time}-{check_loop_time} time.do until check end.'
                             return True
                         else:
-                            print_text = '{:.3f}/{:.3f} second {}-{} time {} fail.'.format(time.time() - start_time_point, time.time() - check_time_point, loop_time, check_loop_time, check_text)
-                            self.print(print_text)
+                            print_text = f'fail check {time_now - start_time_point:.3f}/{time_now - check_time_point:.3f} second {loop_time}-{check_loop_time} time.'
                     except Exception as err:
-                        print_text = '{:.3f}/{:.3f} second {}-{} time {} error:{}'.format(time.time() - start_time_point, time.time() - check_time_point, loop_time, check_loop_time, check_text, err)
-                        self.print(print_text)
+                        time_now = time.time()
+                        print_text = f'error check {time_now - start_time_point:.3f}/{time_now - check_time_point:.3f} second {loop_time}-{check_loop_time} time:{err}'
+                    finally:
+                        if not getattr(check_function, '__robot_log', False):
+                            self.print(print_text)
                     check_interval_time = time.time() - check_interval_time_point
                     if check_interval_time < check_interval:
                         time.sleep(check_interval - check_interval_time)
@@ -195,7 +239,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                 total_time = time.time() - start_time_point
             else:
                 total_time = time.time() - start_time_point
-                print_text = '{:.3f} second {} time {} all fail/error.do_until_check fail.'.format(total_time, loop_time, check_text)
+                print_text = f'{total_time:.3f} second {loop_time} time all fail/error.do_until_check fail.'
                 if error:
                     raise AssertionError(print_text)
                 else:
@@ -233,7 +277,6 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
     def dec(func):
         @wraps_func(func, check_function)
         def wrapper(self,
-                    do_kwargs,
                     check_kwargs,
                     timeout=_timeout,  # noqa
                     init_check=_init_check,  # noqa
@@ -242,6 +285,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                     check_interval=_check_interval,  # noqa
                     error=_error):  # noqa
             check_text = f'check {check_function.__name__}{check_kwargs}'
+            self.print(f'check action:{check_text}')
             if init_check:
                 try:
                     check_bool = init_check_function(**check_kwargs)
@@ -249,10 +293,11 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                         print_text = f'init {check_text} pass.'
                     else:
                         print_text = f'init {check_text} fail.'
-                    self.print(print_text)
                 except Exception as err:
                     print_text = f'init {check_text} error:{err}'
-                    self.print(print_text)
+                finally:
+                    if not getattr(check_function, '__robot_log', False):
+                        self.print(print_text)
             time.sleep(init_sleep)
             total_time = 0
             start_time_point = time.time()
@@ -271,7 +316,6 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                         else:
                             now_stable_time = time.time() - pass_time
                         print_text += ' it has been stable for {:.3f} seconds.'.format(now_stable_time)
-                        self.print(print_text)
                         if now_stable_time > stable_time:
                             return True
                     else:
@@ -280,8 +324,10 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                         self.print(print_text)
                 except Exception as err:
                     print_text = '{:.3f} second {} time {} error:{}'.format(time.time() - start_time_point, loop_time, check_text, err)
-                    self.print(print_text)
                     pass_time = 0
+                finally:
+                    if not getattr(check_function, '__robot_log', False):
+                        self.print(print_text)
                 total_interval_time = time.time() - total_interval_time_point
                 if total_interval_time < check_interval:
                     time.sleep(check_interval - total_interval_time)
