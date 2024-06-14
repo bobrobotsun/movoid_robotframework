@@ -25,10 +25,8 @@ if VERSION:
         from robot.running.outputcapture import OutputCapturer
 
 
-        def _robot_log_keyword(return_is_fail=None):
-            if return_is_fail is None:
-                return_is_fail = []
-            elif callable(return_is_fail):
+        def _robot_log_keyword(*return_is_fail):
+            if len(return_is_fail) == 1 and callable(return_is_fail[0]):
                 return _robot_log_keyword()(return_is_fail)
             else:
                 return_is_fail = list(return_is_fail)
@@ -83,10 +81,8 @@ if VERSION:
         from robot.running.outputcapture import OutputCapturer
 
 
-        def _robot_log_keyword(return_is_fail=None):
-            if return_is_fail is None:
-                return_is_fail = []
-            elif callable(return_is_fail):
+        def _robot_log_keyword(*return_is_fail):
+            if len(return_is_fail) == 1 and callable(return_is_fail[0]):
                 return _robot_log_keyword()(return_is_fail)
             else:
                 return_is_fail = list(return_is_fail)
@@ -133,8 +129,8 @@ if VERSION:
     else:
         raise ImportError('robotframework should be 6 or 7. please pip install robotframework again')
 else:
-    def _robot_log_keyword(return_is_fail=None):
-        if callable(return_is_fail):
+    def _robot_log_keyword(*return_is_fail):
+        if len(return_is_fail) == 1 and callable(return_is_fail[0]):
             return _robot_log_keyword()(return_is_fail)
 
         def dec(func):
