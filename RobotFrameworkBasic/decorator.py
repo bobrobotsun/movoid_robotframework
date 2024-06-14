@@ -203,6 +203,8 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                     do_interval=_do_interval,  # noqa
                     check_interval=_check_interval,  # noqa
                     error=_error):  # noqa
+            do_kwargs['_return_when_error'] = False
+            check_kwargs['_return_when_error'] = False
             do_text = f'do {do_function.__name__}{do_kwargs}'
             self.print(f'do action:{do_text}')
             check_text = f'check {check_function.__name__}{check_kwargs}'
@@ -311,6 +313,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                     stable_time=_stable_time,  # noqa
                     check_interval=_check_interval,  # noqa
                     error=_error):  # noqa
+            check_kwargs['_return_when_error'] = False
             check_text = f'check {check_function.__name__}{check_kwargs}'
             self.print(f'check action:{check_text}')
             if init_check:
