@@ -35,7 +35,7 @@ if VERSION:
 
             def dec(func):
                 @wraps(func)
-                def wrapper(*args, **kwargs):
+                def wrapper(*args, _return_when_error=True, **kwargs):
                     arg_dict = analyse_args_value_from_function(func, *args, **kwargs)
                     data = RunningKeyword(func.__name__)
                     result = ResultKeyword(func.__name__,
@@ -44,6 +44,7 @@ if VERSION:
                     result.starttime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
                     combine = ModelCombiner(data, result)
                     LOGGER.start_keyword(combine)
+                    re_value = None
                     temp_error = None
                     with OutputCapturer():
                         try:
@@ -51,7 +52,10 @@ if VERSION:
                         except Exception as err:
                             result.status = 'FAIL'
                             logger.info(traceback.format_exc())
-                            temp_error = err
+                            if _return_when_error is not None:
+                                re_value = _return_when_error
+                            else:
+                                temp_error = err
                         else:
                             logger.info(f'{re_value}({type(re_value).__name__}):is return value')
                             if re_value in return_is_fail:
@@ -89,7 +93,7 @@ if VERSION:
 
             def dec(func):
                 @wraps(func)
-                def wrapper(*args, **kwargs):
+                def wrapper(*args, _return_when_error=True, **kwargs):
                     arg_dict = analyse_args_value_from_function(func, *args, **kwargs)
                     data = RunningKeyword(func.__name__)
                     result = ResultKeyword(func.__name__,
@@ -97,6 +101,7 @@ if VERSION:
                                            doc=None if func.__doc__ is None else func.__doc__.replace('\n', '\n\n'))
                     result.start_time = datetime.datetime.now()
                     LOGGER.start_keyword(data, result)
+                    re_value = None
                     temp_error = None
                     with OutputCapturer():
                         try:
@@ -105,7 +110,10 @@ if VERSION:
                         except Exception as err:
                             result.status = 'FAIL'
                             logger.info(traceback.format_exc())
-                            temp_error = err
+                            if _return_when_error is not None:
+                                re_value = _return_when_error
+                            else:
+                                temp_error = err
                         else:
                             if re_value in return_is_fail:
                                 result.status = 'FAIL'
@@ -130,8 +138,27 @@ else:
             return _robot_log_keyword()(return_is_fail)
 
         def dec(func):
+            @wraps(func)
+            def wrapper(*args, _return_when_error=True, **kwargs):
+                arg_dict = analyse_args_value_from_function(func, *args, **kwargs)
+                print(*[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'])
+                re_value = None
+                temp_error = None
+                try:
+                    re_value = func(*args, **kwargs)
+                except Exception as err:
+                    if _return_when_error is not None:
+                        re_value = _return_when_error
+                    else:
+                        temp_error = err
+                if temp_error is not None:
+                    raise temp_error
+                else:
+                    print(f'{re_value}({type(re_value).__name__}):is return value')
+                    return re_value
+
             setattr(func, '__robot_log', True)
-            return func
+            return wrapper
 
         return dec
 
