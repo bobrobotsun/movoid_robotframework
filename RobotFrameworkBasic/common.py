@@ -108,14 +108,11 @@ class BasicCommon:
     def error(self, *args, html=False, sep=' ', end='\n'):
         self.print(*args, html=html, level='ERROR', sep=sep, end=end)
 
-    @robot_log_keyword
-    def analyse_json(self, value):
+    @staticmethod
+    def _analyse_json(value):
         """
-        change json str to a python value or do not change it
-        :param value: a json str or anything
-        :return: a python value or value itself
+        analyse_json的无日志版本
         """
-        self.print(f'try to change str to variable:({type(value).__name__}):{value}')
         re_value = value
         if isinstance(value, str):
             try:
@@ -125,12 +122,16 @@ class BasicCommon:
         return re_value
 
     @robot_log_keyword
-    def analyse_self_function(self, function_name):
+    def analyse_json(self, value):
         """
-        find a function by name or do not change it
-        :param function_name: function name(str) or a function(function)
-        :return: target function or param itself
+        获取当前的内容并以json转换它
+        :param value: 字符串就进行json转换，其他则不转换
+        :return:
         """
+        self.print(f'try to change str to variable:({type(value).__name__}):{value}')
+        return self._analyse_json(value)
+
+    def _analyse_self_function(self, function_name):
         if isinstance(function_name, str):
             if hasattr(self, function_name):
                 function = getattr(self, function_name)
@@ -142,6 +143,15 @@ class BasicCommon:
         else:
             raise RfError(f'wrong function:{function_name}')
         return function, function_name
+
+    @robot_log_keyword
+    def analyse_self_function(self, function_name):
+        """
+        尝试将函数名转换为自己能识别的函数
+        :param function_name: str（函数名）、function（函数本身）
+        :return: 返回两个值：函数、函数名
+        """
+        return self._analyse_self_function(function_name)
 
     @robot_log_keyword
     def set_to_dictionary(self, ori_dict, key, value):
