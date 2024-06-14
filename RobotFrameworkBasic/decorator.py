@@ -33,8 +33,8 @@ if VERSION:
 
             def dec(func):
                 @wraps(func)
-                def wrapper(*args, _return_when_error=True, **kwargs):
-                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=True, **kwargs)
+                def wrapper(*args, _return_when_error=None, **kwargs):
+                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, **kwargs)
                     data = RunningKeyword(func.__name__)
                     result = ResultKeyword(func.__name__,
                                            args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
@@ -89,8 +89,8 @@ if VERSION:
 
             def dec(func):
                 @wraps(func)
-                def wrapper(*args, _return_when_error=True, **kwargs):
-                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=True, **kwargs)
+                def wrapper(*args, _return_when_error=None, **kwargs):
+                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, **kwargs)
                     data = RunningKeyword(func.__name__)
                     result = ResultKeyword(func.__name__,
                                            args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
@@ -135,8 +135,8 @@ else:
 
         def dec(func):
             @wraps(func)
-            def wrapper(*args, _return_when_error=True, **kwargs):
-                arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=True, **kwargs)
+            def wrapper(*args, _return_when_error=None, **kwargs):
+                arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, **kwargs)
                 print(func.__name__, *[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'])
                 re_value = None
                 temp_error = None
