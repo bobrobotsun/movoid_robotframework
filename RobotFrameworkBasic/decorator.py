@@ -128,6 +128,8 @@ if VERSION:
             return dec
     else:
         raise ImportError('robotframework should be 6 or 7. please pip install robotframework again')
+
+
 else:
     def _robot_log_keyword(*return_is_fail):
         if len(return_is_fail) == 1 and callable(return_is_fail[0]):
@@ -188,17 +190,18 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
     _error = True if error is None else bool(error)  # type:bool
 
     def dec(func):
+        @robot_log_keyword
         @wraps_func(func, do_function, check_function)
-        def wrapper(self,
-                    do_kwargs,
-                    check_kwargs,
-                    timeout=_timeout,  # noqa
-                    init_check=_init_check,  # noqa
-                    init_sleep=_init_sleep,  # noqa
-                    wait_before_check=_wait_before_check,  # noqa
-                    do_interval=_do_interval,  # noqa
-                    check_interval=_check_interval,  # noqa
-                    error=_error):  # noqa
+        def running_part(self,
+                         do_kwargs,
+                         check_kwargs,
+                         timeout=_timeout,  # noqa
+                         init_check=_init_check,  # noqa
+                         init_sleep=_init_sleep,  # noqa
+                         wait_before_check=_wait_before_check,  # noqa
+                         do_interval=_do_interval,  # noqa
+                         check_interval=_check_interval,  # noqa
+                         error=_error):  # noqa
             do_kwargs['_return_when_error'] = False
             check_kwargs['_return_when_error'] = False
             do_text = f'do {do_function.__name__}{do_kwargs}'
@@ -266,10 +269,22 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                 total_time = time.time() - start_time_point
                 print_text = f'{total_time:.3f} second {loop_time} time all fail/error.do_until_check fail.'
                 if error:
-                    raise AssertionError(print_text)
+                    return AssertionError(print_text)
                 else:
                     self.print(print_text)
                     return False
+
+        @robot_log_keyword
+        def raising_part(err):
+            raise err
+
+        @wraps(running_part)
+        def wrapper(*args, **kwargs):
+            re_value = running_part(*args, **kwargs)
+            if isinstance(re_value, Exception):
+                raising_part(re_value)
+            else:
+                return re_value
 
         return wrapper
 
@@ -301,7 +316,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
 
     def dec(func):
         @wraps_func(func, check_function)
-        def wrapper(self,
+        def running_part(self,
                     check_kwargs,
                     timeout=_timeout,  # noqa
                     init_check=_init_check,  # noqa
@@ -366,6 +381,18 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                 else:
                     self.print(print_text)
                     return False
+
+        @robot_log_keyword
+        def raising_part(err):
+            raise err
+
+        @wraps(running_part)
+        def wrapper(*args, **kwargs):
+            re_value = running_part(*args, **kwargs)
+            if isinstance(re_value, Exception):
+                raising_part(re_value)
+            else:
+                return re_value
 
         return wrapper
 
