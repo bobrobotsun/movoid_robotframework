@@ -27,7 +27,7 @@ if VERSION:
 
         def _robot_log_keyword(*return_is_fail):
             if len(return_is_fail) == 1 and callable(return_is_fail[0]):
-                return _robot_log_keyword()(return_is_fail)
+                return _robot_log_keyword()(return_is_fail[0])
             else:
                 return_is_fail = list(return_is_fail)
 
@@ -83,7 +83,7 @@ if VERSION:
 
         def _robot_log_keyword(*return_is_fail):
             if len(return_is_fail) == 1 and callable(return_is_fail[0]):
-                return _robot_log_keyword()(return_is_fail)
+                return _robot_log_keyword()(return_is_fail[0])
             else:
                 return_is_fail = list(return_is_fail)
 
@@ -131,7 +131,7 @@ if VERSION:
 else:
     def _robot_log_keyword(*return_is_fail):
         if len(return_is_fail) == 1 and callable(return_is_fail[0]):
-            return _robot_log_keyword()(return_is_fail)
+            return _robot_log_keyword()(return_is_fail[0])
 
         def dec(func):
             @wraps(func)
