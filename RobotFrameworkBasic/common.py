@@ -153,18 +153,9 @@ class BasicCommon:
         """
         return self._analyse_self_function(function_name)
 
+    @staticmethod
     @robot_log_keyword
-    def set_to_dictionary(self, ori_dict, key, value):
-        """
-        set a value to a dict.
-        :param ori_dict: target dict
-        :param key: target key
-        :param value: value to be set
-        :return: None
-        """
-        ori_dict[key] = value
-
-    def always_true(self):
+    def always_true():
         return True
 
     @robot_log_keyword
