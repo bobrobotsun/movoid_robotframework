@@ -267,7 +267,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                 total_time = time.time() - start_time_point
             else:
                 total_time = time.time() - start_time_point
-                print_text = f'{total_time:.3f} second {loop_time} time all fail/error.do_until_check fail.'
+                print_text = f'{total_time:.3f} second {loop_time} time {do_text} {check_text} fail.'
                 if error:
                     return AssertionError(print_text)
                 else:
