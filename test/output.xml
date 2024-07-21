@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 6.1.1 (Python 3.8.10 on win32)" generated="20240425 21:18:56.596" rpa="false" schemaversion="4">
+<kw name="set_robot_variable">
+<arg>variable_name:str=_config</arg>
+<arg>value:Config=&lt;RobotFrameworkBasic.action.config.Config object at 0x0000025F9EFE0310&gt;</arg>
+<msg timestamp="20240425 21:18:56.619" level="INFO">${_config} = &lt;RobotFrameworkBasic.action.config.Config object at 0x0000025F9EFE0310&gt;</msg>
+<msg timestamp="20240425 21:18:56.619" level="INFO">None(NoneType):is return value</msg>
+<status status="PASS" starttime="20240425 21:18:56.618" endtime="20240425 21:18:56.619"/>
+</kw>
+<suite id="s1" name="Test" source="E:\000develop\movoid_robotframework\test">
+<kw name="suite-setup" library="do1" type="SETUP">
+<kw name="Config Init" library="RobotFrameworkBasic">
+<kw name="config_init">
+<arg>json_file:NoneType=None</arg>
+<msg timestamp="20240425 21:18:56.622" level="INFO">None(NoneType):is return value</msg>
+<status status="PASS" starttime="20240425 21:18:56.621" endtime="20240425 21:18:56.621"/>
+</kw>
+<status status="PASS" starttime="20240425 21:18:56.620" endtime="20240425 21:18:56.622"/>
+</kw>
+<status status="PASS" starttime="20240425 21:18:56.620" endtime="20240425 21:18:56.622"/>
+</kw>
+<suite id="s1-s1" name="Test1" source="E:\000develop\movoid_robotframework\test\test1.robot">
+<test id="s1-s1-t1" name="01_do1" line="5">
+<kw name="test-setup" library="do1" type="SETUP">
+<kw name="Config Use Suite Case List" library="RobotFrameworkBasic">
+<kw name="config_use_suite_case_list">
+<arg>override:bool=True</arg>
+<arg>clear:bool=False</arg>
+<kw name="get_suite_case_str">
+<arg>join_str:str=-</arg>
+<arg>suite:bool=True</arg>
+<arg>case:bool=True</arg>
+<doc>
+
+        获取当前的suit、case的名称
+
+        :param join_str: suite和case的连接字符串，默认为-
+
+        :param suite: 是否显示suite名
+
+        :param case: 是否显示case名，如果不是case内，即使True也不显示
+
+        :return: 连接好的字符串
+
+        </doc>
+<kw name="get_robot_variable">
+<arg>variable_name:str=SUITE NAME</arg>
+<arg>default:NoneType=None</arg>
+<msg timestamp="20240425 21:18:56.625" level="INFO">Test.Test1(str):is return value</msg>
+<status status="PASS" starttime="20240425 21:18:56.624" endtime="20240425 21:18:56.624"/>
+</kw>
+<kw name="get_robot_variable">
+<arg>variable_name:str=TEST NAME</arg>
+<arg>default:NoneType=None</arg>
+<msg timestamp="20240425 21:18:56.625" level="INFO">01_do1(str):is return value</msg>
+<status status="PASS" starttime="20240425 21:18:56.624" endtime="20240425 21:18:56.624"/>
+</kw>
+<kw name="get_robot_variable">
+<arg>variable_name:str=TEST NAME</arg>
+<arg>default:NoneType=None</arg>
+<msg timestamp="20240425 21:18:56.625" level="INFO">01_do1(str):is return value</msg>
+<status status="PASS" starttime="20240425 21:18:56.624" endtime="20240425 21:18:56.624"/>
+</kw>
+<msg timestamp="20240425 21:18:56.625" level="INFO">Test.Test1-01_do1(str):is return value</msg>
+<status status="PASS" starttime="20240425 21:18:56.624" endtime="20240425 21:18:56.624"/>
+</kw>
+<msg timestamp="20240425 21:18:56.626" level="INFO">Traceback (most recent call last):
+  File "E:\000develop\movoid_robotframework\RobotFrameworkBasic\decorator.py", line 42, in wrapper
+    re_value = func(*args, **kwargs)
+  File "E:\000develop\movoid_robotframework\RobotFrameworkBasic\action\config.py", line 177, in config_use_suite_case_list
+    self._config_config.use_suite_case_list(suite_case_key, override=override, clear=clear)
+  File "E:\000develop\movoid_robotframework\RobotFrameworkBasic\action\config.py", line 146, in use_suite_case_list
+    for label in self._ori[suite_case_now][suite_case_key].value:
+AttributeError: 'list' object has no attribute 'value'
+</msg>
+<status status="FAIL" starttime="20240425 21:18:56.624" endtime="20240425 21:18:56.625"/>
+</kw>
+<msg timestamp="20240425 21:18:56.626" level="FAIL">AttributeError: 'list' object has no attribute 'value'</msg>
+<status status="FAIL" starttime="20240425 21:18:56.624" endtime="20240425 21:18:56.627"/>
+</kw>
+<status status="FAIL" starttime="20240425 21:18:56.624" endtime="20240425 21:18:56.627"/>
+</kw>
+<status status="FAIL" starttime="20240425 21:18:56.624" endtime="20240425 21:18:56.627">Setup failed:
+AttributeError: 'list' object has no attribute 'value'</status>
+</test>
+<test id="s1-s1-t2" name="02_do2" line="8">
+<kw name="test-setup" library="do1" type="SETUP">
+<kw name="Config Use Suite Case List" library="RobotFrameworkBasic">
+<kw name="config_use_suite_case_list">
+<arg>override:bool=True</arg>
+<arg>clear:bool=False</arg>
+<kw name="get_suite_case_str">
+<arg>join_str:str=-</arg>
+<arg>suite:bool=True</arg>
+<arg>case:bool=True</arg>
+<doc>
+
+        获取当前的suit、case的名称
+
+        :param join_str: suite和case的连接字符串，默认为-
+
+        :param suite: 是否显示suite名
+
+        :param case: 是否显示case名，如果不是case内，即使True也不显示
+
+        :return: 连接好的字符串
+
+        </doc>
+<kw name="get_robot_variable">
+<arg>variable_name:str=SUITE NAME</arg>
+<arg>default:NoneType=None</arg>
+<msg timestamp="20240425 21:18:56.628" level="INFO">Test.Test1(str):is return value</msg>
+<status status="PASS" starttime="20240425 21:18:56.628" endtime="20240425 21:18:56.628"/>
+</kw>
+<kw name="get_robot_variable">
+<arg>variable_name:str=TEST NAME</arg>
+<arg>default:NoneType=None</arg>
+<msg timestamp="20240425 21:18:56.628" level="INFO">02_do2(str):is return value</msg>
+<status status="PASS" starttime="20240425 21:18:56.628" endtime="20240425 21:18:56.628"/>
+</kw>
+<kw name="get_robot_variable">
+<arg>variable_name:str=TEST NAME</arg>
+<arg>default:NoneType=None</arg>
+<msg timestamp="20240425 21:18:56.628" level="INFO">02_do2(str):is return value</msg>
+<status status="PASS" starttime="20240425 21:18:56.628" endtime="20240425 21:18:56.628"/>
+</kw>
+<msg timestamp="20240425 21:18:56.628" level="INFO">Test.Test1-02_do2(str):is return value</msg>
+<status status="PASS" starttime="20240425 21:18:56.628" endtime="20240425 21:18:56.628"/>
+</kw>
+<msg timestamp="20240425 21:18:56.629" level="INFO">Traceback (most recent call last):
+  File "E:\000develop\movoid_robotframework\RobotFrameworkBasic\decorator.py", line 42, in wrapper
+    re_value = func(*args, **kwargs)
+  File "E:\000develop\movoid_robotframework\RobotFrameworkBasic\action\config.py", line 177, in config_use_suite_case_list
+    self._config_config.use_suite_case_list(suite_case_key, override=override, clear=clear)
+  File "E:\000develop\movoid_robotframework\RobotFrameworkBasic\action\config.py", line 146, in use_suite_case_list
+    for label in self._ori[suite_case_now][suite_case_key].value:
+AttributeError: 'list' object has no attribute 'value'
+</msg>
+<status status="FAIL" starttime="20240425 21:18:56.628" endtime="20240425 21:18:56.629"/>
+</kw>
+<msg timestamp="20240425 21:18:56.629" level="FAIL">AttributeError: 'list' object has no attribute 'value'</msg>
+<status status="FAIL" starttime="20240425 21:18:56.628" endtime="20240425 21:18:56.629"/>
+</kw>
+<status status="FAIL" starttime="20240425 21:18:56.627" endtime="20240425 21:18:56.629"/>
+</kw>
+<status status="FAIL" starttime="20240425 21:18:56.627" endtime="20240425 21:18:56.630">Setup failed:
+AttributeError: 'list' object has no attribute 'value'</status>
+</test>
+<status status="FAIL" starttime="20240425 21:18:56.622" endtime="20240425 21:18:56.631"/>
+</suite>
+<status status="FAIL" starttime="20240425 21:18:56.597" endtime="20240425 21:18:56.631"/>
+</suite>
+<statistics>
+<total>
+<stat pass="0" fail="2" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat pass="0" fail="2" skip="0" id="s1" name="Test">Test</stat>
+<stat pass="0" fail="2" skip="0" id="s1-s1" name="Test1">Test.Test1</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>
