@@ -11,6 +11,7 @@ import json
 import pathlib
 import traceback
 from typing import Union
+from movoid_function import replace_function
 
 from robot.libraries.BuiltIn import BuiltIn
 
@@ -29,6 +30,7 @@ class BasicCommon:
         self.warn_list = []
         self.output_dir = getattr(self, 'output_dir', None)
         self._robot_variable = {}
+        self.replace_builtin_print()
 
     if VERSION:
         print_function = {
@@ -95,6 +97,9 @@ class BasicCommon:
             if case:
                 sc_list.append('case')
             return join_str.join(sc_list)
+
+    def replace_builtin_print(self):
+        replace_function(print, self.print)
 
     def debug(self, *args, html=False, sep=' ', end='\n'):
         self.print(*args, html=html, level='DEBUG', sep=sep, end=end)

@@ -269,7 +269,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                 total_time = time.time() - start_time_point
                 print_text = f'{total_time:.3f} second {loop_time} time {do_text} {check_text} fail.'
                 if error:
-                    raise AssertionError(print_text)
+                    return AssertionError(print_text)
                 else:
                     self.print(print_text)
                     return False
@@ -315,6 +315,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
     _error = True if error is None else bool(error)  # type:bool
 
     def dec(func):
+        @robot_log_keyword
         @wraps_func(func, check_function)
         def running_part(self,
                          check_kwargs,
@@ -377,7 +378,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                 total_time = time.time() - start_time_point
                 print_text = '{:.3f} second {} time {} all fail/error.do_until_check fail.'.format(total_time, loop_time, check_text)
                 if error:
-                    raise AssertionError(print_text)
+                    return AssertionError(print_text)
                 else:
                     self.print(print_text)
                     return False
@@ -448,7 +449,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                 except Exception as err:
                     print_text = f'error always true {time.time() - start_time_point:.3f} second {loop_time} time :{err}'
                     if error:
-                        raise AssertionError(print_text)
+                        return AssertionError(print_text)
                     else:
                         return False
                 else:
@@ -458,7 +459,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                     else:
                         print_text = f'fail always true {time_now - start_time_point:.3f} second {loop_time} time'
                         if error:
-                            raise AssertionError(print_text)
+                            return AssertionError(print_text)
                         else:
                             return False
                 finally:
@@ -487,7 +488,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                 total_time = time.time() - start_time_point
                 print_text = f'{total_time:.3f} second {loop_time} time {do_text} {check_text} fail.'
                 if error:
-                    raise AssertionError(print_text)
+                    return AssertionError(print_text)
                 else:
                     self.print(print_text)
                     return False
