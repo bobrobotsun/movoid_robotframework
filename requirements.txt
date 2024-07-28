@@ -2,5 +2,5 @@ twine
 build
 pytest
 pytest-html
-robotframework
+robotframework==6.1.1
 movoid-function

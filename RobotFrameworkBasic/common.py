@@ -9,6 +9,7 @@
 import base64
 import json
 import pathlib
+import sys
 import traceback
 from typing import Union
 from movoid_function import replace_function
@@ -30,7 +31,8 @@ class BasicCommon:
         self.warn_list = []
         self.output_dir = getattr(self, 'output_dir', None)
         self._robot_variable = {}
-        self.replace_builtin_print()
+        if VERSION:
+            self.replace_builtin_print()
 
     if VERSION:
         print_function = {
