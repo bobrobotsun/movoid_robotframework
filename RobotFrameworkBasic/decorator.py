@@ -32,6 +32,9 @@ if VERSION:
                 return_is_fail = list(return_is_fail)
 
             def dec(func):
+                if getattr(func, '__robot_log', False):
+                    return func
+
                 @wraps(func)
                 def wrapper(*args, _return_when_error=None, **kwargs):
                     arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, **kwargs)
@@ -88,6 +91,9 @@ if VERSION:
                 return_is_fail = list(return_is_fail)
 
             def dec(func):
+                if getattr(func, '__robot_log', False):
+                    return func
+
                 @wraps(func)
                 def wrapper(*args, _return_when_error=None, **kwargs):
                     arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, **kwargs)
@@ -136,6 +142,9 @@ else:
             return _robot_log_keyword()(return_is_fail[0])
 
         def dec(func):
+            if getattr(func, '__robot_log', False):
+                return func
+
             @wraps(func)
             def wrapper(*args, _return_when_error=None, **kwargs):
                 arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, **kwargs)
