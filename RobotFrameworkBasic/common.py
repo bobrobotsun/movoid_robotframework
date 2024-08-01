@@ -42,9 +42,16 @@ class BasicCommon:
             'ERROR': logger.error,
         }
 
-        def print(self, *args, html=False, level='INFO', sep=' ', end='\n'):
+        def print(self, *args, html=False, level='INFO', sep=' ', end='\n', file=None):
             print_text = str(sep).join([str(_) for _ in args]) + str(end)
-            self.print_function.get(level.upper(), logger.info)(print_text, html)
+            if file is None:
+                self.print_function.get(level.upper(), logger.info)(print_text, html)
+            elif file == sys.stdout:
+                self.print_function.get('INFO')(print_text, html)
+            elif file == sys.stderr:
+                self.print_function.get('ERROR')(print_text, html)
+            else:
+                file.write(print_text)
 
         @robot_log_keyword
         def get_robot_variable(self, variable_name: str, default=None):
