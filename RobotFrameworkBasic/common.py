@@ -42,16 +42,18 @@ class BasicCommon:
             'ERROR': logger.error,
         }
 
-        def print(self, *args, html=False, level='INFO', sep=' ', end='\n', file=None):
+        def print(self, *args, html=False, also_console=False, level='INFO', sep=' ', end='\n', file=None):
             print_text = str(sep).join([str(_) for _ in args]) + str(end)
             if file is None:
-                self.print_function.get(level.upper(), logger.info)(print_text, html)
+                logger.write(print_text, level=level, html=html)
             elif file == sys.stdout:
-                self.print_function.get('INFO')(print_text, html)
+                logger.info(print_text, html=html)
             elif file == sys.stderr:
-                self.print_function.get('ERROR')(print_text, html)
+                logger.error(print_text, html=html)
             else:
                 file.write(print_text)
+            if also_console:
+                logger.console(print_text)
 
         @robot_log_keyword
         def get_robot_variable(self, variable_name: str, default=None):
@@ -90,8 +92,8 @@ class BasicCommon:
                     sc_list.append(self.get_robot_variable('TEST NAME'))
             return join_str.join(sc_list)
     else:
-        def print(self, *args, html=False, level='INFO', sep=' ', end='\n'):
-            print(*args, sep=sep, end=end)
+        def print(self, *args, html=False, also_console=False, level='INFO', sep=' ', end='\n', file=None):
+            print(*args, sep=sep, end=end, file=file)
 
         def get_robot_variable(self, variable_name: str, default=None):
             return self._robot_variable.get(variable_name, default)
@@ -110,17 +112,17 @@ class BasicCommon:
     def replace_builtin_print(self):
         replace_function(print, self.print)
 
-    def debug(self, *args, html=False, sep=' ', end='\n'):
-        self.print(*args, html=html, level='DEBUG', sep=sep, end=end)
+    def debug(self, *args, html=False, also_console=False, sep=' ', end='\n', file=None):
+        self.print(*args, html=html, also_console=also_console, level='DEBUG', sep=sep, end=end, file=file)
 
-    def info(self, *args, html=False, sep=' ', end='\n'):
-        self.print(*args, html=html, level='INFO', sep=sep, end=end)
+    def info(self, *args, html=False, also_console=False, sep=' ', end='\n', file=None):
+        self.print(*args, html=html, also_console=also_console, level='INFO', sep=sep, end=end, file=file)
 
-    def warn(self, *args, html=False, sep=' ', end='\n'):
-        self.print(*args, html=html, level='WARN', sep=sep, end=end)
+    def warn(self, *args, html=False, also_console=False, sep=' ', end='\n', file=None):
+        self.print(*args, html=html, also_console=also_console, level='WARN', sep=sep, end=end, file=file)
 
-    def error(self, *args, html=False, sep=' ', end='\n'):
-        self.print(*args, html=html, level='ERROR', sep=sep, end=end)
+    def error(self, *args, html=False, also_console=False, sep=' ', end='\n', file=None):
+        self.print(*args, html=html, also_console=also_console, level='ERROR', sep=sep, end=end, file=file)
 
     @staticmethod
     def _analyse_json(value):

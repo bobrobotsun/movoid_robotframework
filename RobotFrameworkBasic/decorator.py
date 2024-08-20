@@ -201,8 +201,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
     def dec(func):
         @robot_log_keyword
         @wraps_func(func, do_function, check_function)
-        def running_part(self,
-                         do_kwargs,
+        def running_part(do_kwargs,
                          check_kwargs,
                          timeout=_timeout,  # noqa
                          init_check=_init_check,  # noqa
@@ -214,9 +213,9 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
             do_kwargs['_return_when_error'] = False
             check_kwargs['_return_when_error'] = False
             do_text = f'do {do_function.__name__}{do_kwargs}'
-            self.print(f'do action:{do_text}')
+            print(f'do action:{do_text}')
             check_text = f'check {check_function.__name__}{check_kwargs}'
-            self.print(f'check action:{check_text}')
+            print(f'check action:{check_text}')
             if init_check:
                 try:
                     check_bool = init_check_function(**check_kwargs)
@@ -229,7 +228,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                     print_text = f'error init {check_text}:{err}'
                 finally:
                     if not getattr(init_check_function, '__robot_log', False):
-                        self.print(print_text)
+                        print(print_text)
             time.sleep(init_sleep)
             total_time = 0
             start_time_point = time.time()
@@ -244,7 +243,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                     print_text = f'error do {time.time() - start_time_point:.3f} second {loop_time} time :{err}'
                 finally:
                     if not getattr(do_function, '__robot_log', False):
-                        self.print(print_text)
+                        print(print_text)
                 time.sleep(wait_before_check)
                 check_time = 0
                 check_time_point = time.time()
@@ -265,7 +264,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                         print_text = f'error check {time_now - start_time_point:.3f}/{time_now - check_time_point:.3f} second {loop_time}-{check_loop_time} time:{err}'
                     finally:
                         if not getattr(check_function, '__robot_log', False):
-                            self.print(print_text)
+                            print(print_text)
                     check_interval_time = time.time() - check_interval_time_point
                     if check_interval_time < check_interval:
                         time.sleep(check_interval - check_interval_time)
@@ -280,7 +279,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                 if error:
                     return AssertionError(print_text)
                 else:
-                    self.print(print_text)
+                    print(print_text)
                     return False
 
         @robot_log_keyword
@@ -326,8 +325,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
     def dec(func):
         @robot_log_keyword
         @wraps_func(func, check_function)
-        def running_part(self,
-                         check_kwargs,
+        def running_part(check_kwargs,
                          timeout=_timeout,  # noqa
                          init_check=_init_check,  # noqa
                          init_sleep=_init_sleep,  # noqa
@@ -336,7 +334,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                          error=_error):  # noqa
             check_kwargs['_return_when_error'] = False
             check_text = f'check {check_function.__name__}{check_kwargs}'
-            self.print(f'check action:{check_text}')
+            print(f'check action:{check_text}')
             if init_check:
                 try:
                     check_bool = init_check_function(**check_kwargs)
@@ -348,7 +346,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                     print_text = f'init {check_text} error:{err}'
                 finally:
                     if not getattr(check_function, '__robot_log', False):
-                        self.print(print_text)
+                        print(print_text)
             time.sleep(init_sleep)
             total_time = 0
             start_time_point = time.time()
@@ -372,13 +370,13 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                     else:
                         print_text = '{:.3f} second {} time {} fail.'.format(time.time() - start_time_point, loop_time, check_text)
                         pass_time = 0
-                        self.print(print_text)
+                        print(print_text)
                 except Exception as err:
                     print_text = '{:.3f} second {} time {} error:{}'.format(time.time() - start_time_point, loop_time, check_text, err)
                     pass_time = 0
                 finally:
                     if not getattr(check_function, '__robot_log', False):
-                        self.print(print_text)
+                        print(print_text)
                 total_interval_time = time.time() - total_interval_time_point
                 if total_interval_time < check_interval:
                     time.sleep(check_interval - total_interval_time)
@@ -389,7 +387,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                 if error:
                     return AssertionError(print_text)
                 else:
-                    self.print(print_text)
+                    print(print_text)
                     return False
 
         @robot_log_keyword
@@ -432,8 +430,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
     def dec(func):
         @robot_log_keyword
         @wraps_func(func, do_function, check_function)
-        def running_part(self,
-                         do_kwargs,
+        def running_part(do_kwargs,
                          check_kwargs,
                          timeout=_timeout,  # noqa
                          init_sleep=_init_sleep,  # noqa
@@ -443,9 +440,9 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
             do_kwargs['_return_when_error'] = False
             check_kwargs['_return_when_error'] = False
             do_text = f'always true {do_function.__name__}{do_kwargs}'
-            self.print(f'always true action:{do_text}')
+            print(f'always true action:{do_text}')
             check_text = f'check {check_function.__name__}{check_kwargs}'
-            self.print(f'check action:{check_text}')
+            print(f'check action:{check_text}')
             time.sleep(init_sleep)
             total_time = 0
             start_time_point = time.time()
@@ -473,7 +470,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                             return False
                 finally:
                     if not getattr(do_function, '__robot_log', False):
-                        self.print(print_text)
+                        print(print_text)
                 time.sleep(wait_before_check)
                 try:
                     check_bool = check_function(**check_kwargs)
@@ -488,7 +485,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                     print_text = f'error check {time_now - start_time_point:.3f} second {loop_time} time:{err}'
                 finally:
                     if not getattr(check_function, '__robot_log', False):
-                        self.print(print_text)
+                        print(print_text)
                 total_interval_time = time.time() - total_interval_time_point
                 if total_interval_time < check_interval:
                     time.sleep(check_interval - total_interval_time)
@@ -499,7 +496,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                 if error:
                     return AssertionError(print_text)
                 else:
-                    self.print(print_text)
+                    print(print_text)
                     return False
 
         @robot_log_keyword
