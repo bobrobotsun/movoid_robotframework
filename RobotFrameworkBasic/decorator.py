@@ -52,13 +52,13 @@ if VERSION:
                             re_value = func(*args, **kwargs)
                         except Exception as err:
                             result.status = 'FAIL'
-                            logger.info(traceback.format_exc())
+                            print(traceback.format_exc())
                             if _return_when_error is not None:
                                 re_value = _return_when_error
                             else:
                                 temp_error = err
                         else:
-                            logger.info(f'{re_value}({type(re_value).__name__}):is return value')
+                            print(f'{re_value}({type(re_value).__name__}):is return value')
                             if re_value in return_is_fail:
                                 result.status = 'FAIL'
                             else:
@@ -108,10 +108,10 @@ if VERSION:
                     with OutputCapturer():
                         try:
                             re_value = func(*args, **kwargs)
-                            logger.info(f'{re_value}({type(re_value).__name__}):is return value')
+                            print(f'{re_value}({type(re_value).__name__}):is return value')
                         except Exception as err:
                             result.status = 'FAIL'
-                            logger.info(traceback.format_exc())
+                            print(traceback.format_exc())
                             if _return_when_error is not None:
                                 re_value = _return_when_error
                             else:
