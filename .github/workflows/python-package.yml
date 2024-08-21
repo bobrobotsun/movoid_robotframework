@@ -45,7 +45,7 @@ jobs:
           path: report.html
       - name: Test with robotframework
         run: |
-          python -m robot.run .
+          python -m robot.run -d robot .
       - name: show robot log.html
         uses: actions/upload-artifact@v4
         with:
