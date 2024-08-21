@@ -43,3 +43,21 @@ jobs:
         with:
           name: report_${{ matrix.python-version }}.html
           path: report.html
+      - name: Test with robotframework
+        run: |
+          python -m robot.run -d robot .
+      - name: show robot log.html
+        uses: actions/upload-artifact@v4
+        with:
+          name: report_${{ matrix.python-version }}_robot_log.html
+          path: robot/log.html
+      - name: show robot output.xml
+        uses: actions/upload-artifact@v4
+        with:
+          name: report_${{ matrix.python-version }}_robot_output.xml
+          path: robot/output.xml
+      - name: show robot report.html
+        uses: actions/upload-artifact@v4
+        with:
+          name: report_${{ matrix.python-version }}_robot_report.html
+          path: robot/report.html

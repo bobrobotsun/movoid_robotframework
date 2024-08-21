@@ -12,6 +12,8 @@ import pathlib
 import sys
 import traceback
 from typing import Union
+
+from movoid_config import Config
 from movoid_function import replace_function
 
 from robot.libraries.BuiltIn import BuiltIn
@@ -31,6 +33,8 @@ class BasicCommon:
         self.warn_list = []
         self.output_dir = getattr(self, 'output_dir', None)
         self._robot_variable = {}
+        self._robot_config = Config()
+        self.robot_config_init()
         if VERSION:
             self.replace_builtin_print()
 
@@ -42,18 +46,28 @@ class BasicCommon:
             'ERROR': logger.error,
         }
 
-        def print(self, *args, html=False, also_console=False, level='INFO', sep=' ', end='\n', file=None):
-            print_text = str(sep).join([str(_) for _ in args]) + str(end)
+        def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True):
+            level = str(level).upper()
+            also_console = self._robot_config.print_console if also_console is None else bool(also_console)
+            print_text = str(sep).join([str(_) for _ in args])
+            print_text_end = print_text + str(end)
             if file is None:
                 logger.write(print_text, level=level, html=html)
             elif file == sys.stdout:
-                logger.info(print_text, html=html)
+                logger.write(print_text, html=html)
             elif file == sys.stderr:
                 logger.error(print_text, html=html)
             else:
-                file.write(print_text)
+                file.write(print_text_end)
+                if flush:
+                    file.flush()
             if also_console:
-                logger.console(print_text)
+                if level in ('WARN', 'ERROR'):
+                    stream = sys.__stderr__
+                else:
+                    stream = sys.__stdout__
+                    stream.write(print_text_end)
+                    stream.flush()
 
         @robot_log_keyword
         def get_robot_variable(self, variable_name: str, default=None):
@@ -92,8 +106,11 @@ class BasicCommon:
                     sc_list.append(self.get_robot_variable('TEST NAME'))
             return join_str.join(sc_list)
     else:
-        def print(self, *args, html=False, also_console=False, level='INFO', sep=' ', end='\n', file=None):
-            print(*args, sep=sep, end=end, file=file)
+        def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True):
+            level = str(level).upper()
+            if file is None and level == 'ERROR':
+                file = sys.__stderr__
+            print(*args, sep=sep, end=end, file=file, flush=flush)
 
         def get_robot_variable(self, variable_name: str, default=None):
             return self._robot_variable.get(variable_name, default)
@@ -112,17 +129,17 @@ class BasicCommon:
     def replace_builtin_print(self):
         replace_function(print, self.print)
 
-    def debug(self, *args, html=False, also_console=False, sep=' ', end='\n', file=None):
-        self.print(*args, html=html, also_console=also_console, level='DEBUG', sep=sep, end=end, file=file)
+    def debug(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True):
+        self.print(*args, html=html, also_console=also_console, level='DEBUG', sep=sep, end=end, file=file, flush=flush)
 
-    def info(self, *args, html=False, also_console=False, sep=' ', end='\n', file=None):
-        self.print(*args, html=html, also_console=also_console, level='INFO', sep=sep, end=end, file=file)
+    def info(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True):
+        self.print(*args, html=html, also_console=also_console, level='INFO', sep=sep, end=end, file=file, flush=flush)
 
-    def warn(self, *args, html=False, also_console=False, sep=' ', end='\n', file=None):
-        self.print(*args, html=html, also_console=also_console, level='WARN', sep=sep, end=end, file=file)
+    def warn(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True):
+        self.print(*args, html=html, also_console=also_console, level='WARN', sep=sep, end=end, file=file, flush=flush)
 
-    def error(self, *args, html=False, also_console=False, sep=' ', end='\n', file=None):
-        self.print(*args, html=html, also_console=also_console, level='ERROR', sep=sep, end=end, file=file)
+    def error(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True):
+        self.print(*args, html=html, also_console=also_console, level='ERROR', sep=sep, end=end, file=file, flush=flush)
 
     @staticmethod
     def _analyse_json(value):
@@ -209,7 +226,7 @@ class BasicCommon:
                 elif param_str in ('false',):
                     re_value = False
                 else:
-                    self.print(f'{param_str} is not a traditional bool, we use forced conversion.')
+                    self.print(f'>{param_str}< is not a traditional bool, we use forced conversion.')
                     re_value = bool(param_str)
             else:
                 re_value = eval(f'{param_style_str}({param_str})')
@@ -223,3 +240,7 @@ class BasicCommon:
                 self.print(f'we use default value:<{default}>({type(default).__name__})')
                 re_value = default
         return re_value
+
+    def robot_config_init(self):
+        self._robot_config.add_rule('print_console', 'bool', default=False)
+        self._robot_config.init(None, 'movoid_robotframework.ini', False)
