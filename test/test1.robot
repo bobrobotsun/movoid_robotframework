@@ -11,6 +11,7 @@ Resource          ./do1.resource
     Robot Check Param    ${EMPTY}    bool
     Robot Check Param    [1,2,3]    list
     Robot Check Param    {1:1,2:2}    dict
+    Evaluate    print(sys.argv)
 #    Log    ${_config}[a]
 #    Func1    ${_config}[a]
 
