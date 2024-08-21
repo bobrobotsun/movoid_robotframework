@@ -12,7 +12,7 @@ import sys
 run_file = pathlib.Path(sys.argv[0])
 if run_file.stem == 'robot' and run_file.parent.name.lower() == 'scripts':
     run = 'robot'
-elif run_file.name == 'run.py' and run_file.parent.name == 'robot' and run_file.parents[1].name.lower() == 'site-packages' and run_file.parents[2].name.lower() == 'lib':
+elif run_file.name == 'run.py' and run_file.parent.name == 'robot' and run_file.parents[1].name.lower() == 'site-packages':
     run = 'robot'
 else:
     run = 'python'
