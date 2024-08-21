@@ -15,6 +15,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=['robotframework>=6.0,<8',
-                      'movoid_function'
+                      'movoid_config>=1.2.5',
+                      'movoid_function',
                       ],
 )

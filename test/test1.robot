@@ -1,5 +1,5 @@
 *** Settings ***
-Resource          do1.resource
+Resource          ./do1.resource
 
 *** Test Cases ***
 01_do1

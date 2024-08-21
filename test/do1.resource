@@ -3,10 +3,10 @@ Library            RobotFrameworkBasic
 
 *** Keywords ***
 suite-setup
-    Config Init
+    Log    setup
 
 test-setup
-    Config Use Suite Case List
+    Log    test setup
 
 test-setup2
     Log    123

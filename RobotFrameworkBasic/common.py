@@ -12,6 +12,8 @@ import pathlib
 import sys
 import traceback
 from typing import Union
+
+from movoid_config import Config
 from movoid_function import replace_function
 
 from robot.libraries.BuiltIn import BuiltIn
@@ -31,6 +33,8 @@ class BasicCommon:
         self.warn_list = []
         self.output_dir = getattr(self, 'output_dir', None)
         self._robot_variable = {}
+        self._robot_config = Config()
+        self.robot_config_init()
         if VERSION:
             self.replace_builtin_print()
 
@@ -42,7 +46,8 @@ class BasicCommon:
             'ERROR': logger.error,
         }
 
-        def print(self, *args, html=False, also_console=False, level='INFO', sep=' ', end='\n', file=None):
+        def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None):
+            also_console = self._robot_config.print_console if also_console is None else bool(also_console)
             print_text = str(sep).join([str(_) for _ in args]) + str(end)
             if file is None:
                 logger.write(print_text, level=level, html=html)
@@ -223,3 +228,7 @@ class BasicCommon:
                 self.print(f'we use default value:<{default}>({type(default).__name__})')
                 re_value = default
         return re_value
+
+    def robot_config_init(self):
+        self._robot_config.add_rule('print_console', 'bool', default=False)
+        self._robot_config.init(None, 'movoid_robotframework.ini', False)
