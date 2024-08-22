@@ -72,7 +72,7 @@ class Test_function_always_true_until_check:
         try:
             rf.always_true_and_always_false(timeout=1)
         except Exception as err:
-            pass
+            assert isinstance(err, AssertionError)
         else:
             raise AssertionError('no error raised')
 
@@ -85,7 +85,7 @@ class Test_function_always_true_until_check:
         try:
             rf.true_count_false_and_always_false(timeout=1)
         except Exception as err:
-            pass
+            assert isinstance(err, AssertionError)
         else:
             raise AssertionError('no error raised')
 
@@ -98,7 +98,7 @@ class Test_function_always_true_until_check:
         try:
             rf.true_count_error_and_always_false(timeout=1)
         except Exception as err:
-            pass
+            assert isinstance(err, AssertionError)
         else:
             raise AssertionError('no error raised')
 
@@ -111,7 +111,7 @@ class Test_function_always_true_until_check:
         try:
             rf.always_true_and_false_count_error(timeout=1)
         except Exception as err:
-            pass
+            assert isinstance(err, AssertionError)
         else:
             raise AssertionError('no error raised')
 

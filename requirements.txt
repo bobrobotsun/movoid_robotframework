@@ -4,4 +4,4 @@ pytest
 pytest-html
 robotframework==6.1.1
 movoid-config>=1.2.5
-movoid-function
+movoid-function>=1.7.1

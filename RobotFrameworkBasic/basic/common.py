@@ -18,9 +18,9 @@ from movoid_function import replace_function
 
 from robot.libraries.BuiltIn import BuiltIn
 
-from .decorator import robot_log_keyword
-from .error import RfError
-from .version import VERSION
+from ..decorator import robot_no_log_keyword
+from ..error import RfError
+from ..version import VERSION
 
 if VERSION:
     from robot.api import logger
@@ -34,9 +34,9 @@ class BasicCommon:
         self.output_dir = getattr(self, 'output_dir', None)
         self._robot_variable = {}
         self._robot_config = Config()
-        self.robot_config_init()
+        self._robot_config_init()
         if VERSION:
-            self.replace_builtin_print()
+            self._replace_builtin_print()
 
     if VERSION:
         print_function = {
@@ -46,6 +46,7 @@ class BasicCommon:
             'ERROR': logger.error,
         }
 
+        @robot_no_log_keyword
         def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True):
             level = str(level).upper()
             also_console = self._robot_config.print_console if also_console is None else bool(also_console)
@@ -63,21 +64,19 @@ class BasicCommon:
                     file.flush()
             if also_console:
                 if level in ('WARN', 'ERROR'):
-                    stream = sys.__stderr__
+                    # stream = sys.__stderr__
+                    pass
                 else:
                     stream = sys.__stdout__
                     stream.write(print_text_end)
                     stream.flush()
 
-        @robot_log_keyword
         def get_robot_variable(self, variable_name: str, default=None):
             return self.built.get_variable_value("${" + variable_name + "}", default)
 
-        @robot_log_keyword
         def set_robot_variable(self, variable_name: str, value):
             self.built.set_global_variable("${" + variable_name + "}", value)
 
-        @robot_log_keyword
         def get_suite_case_str(self, join_str: str = '-', suite: bool = True, case: bool = True, suite_ori: str = ''):
             """
             获取当前的suit、case的名称
@@ -106,7 +105,8 @@ class BasicCommon:
                     sc_list.append(self.get_robot_variable('TEST NAME'))
             return join_str.join(sc_list)
     else:
-        def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True):
+        @robot_no_log_keyword
+        def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True): # noqa
             level = str(level).upper()
             if file is None and level == 'ERROR':
                 file = sys.__stderr__
@@ -118,7 +118,7 @@ class BasicCommon:
         def set_robot_variable(self, variable_name: str, value):
             self._robot_variable[variable_name] = value
 
-        def get_suite_case_str(self, join_str: str = '-', suite: bool = True, case: bool = True, suite_ori: str = ''):
+        def get_suite_case_str(self, join_str: str = '-', suite: bool = True, case: bool = True, suite_ori: str = ''): # noqa
             sc_list = []
             if suite:
                 sc_list.append('suite')
@@ -126,18 +126,22 @@ class BasicCommon:
                 sc_list.append('case')
             return join_str.join(sc_list)
 
-    def replace_builtin_print(self):
+    def _replace_builtin_print(self):
         replace_function(print, self.print)
 
+    @robot_no_log_keyword
     def debug(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True):
         self.print(*args, html=html, also_console=also_console, level='DEBUG', sep=sep, end=end, file=file, flush=flush)
 
+    @robot_no_log_keyword
     def info(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True):
         self.print(*args, html=html, also_console=also_console, level='INFO', sep=sep, end=end, file=file, flush=flush)
 
+    @robot_no_log_keyword
     def warn(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True):
         self.print(*args, html=html, also_console=also_console, level='WARN', sep=sep, end=end, file=file, flush=flush)
 
+    @robot_no_log_keyword
     def error(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True):
         self.print(*args, html=html, also_console=also_console, level='ERROR', sep=sep, end=end, file=file, flush=flush)
 
@@ -154,7 +158,6 @@ class BasicCommon:
                 re_value = value
         return re_value
 
-    @robot_log_keyword
     def analyse_json(self, value):
         """
         获取当前的内容并以json转换它
@@ -177,7 +180,6 @@ class BasicCommon:
             raise RfError(f'wrong function:{function_name}')
         return function, function_name
 
-    @robot_log_keyword
     def analyse_self_function(self, function_name):
         """
         尝试将函数名转换为自己能识别的函数
@@ -187,17 +189,14 @@ class BasicCommon:
         return self._analyse_self_function(function_name)
 
     @staticmethod
-    @robot_log_keyword
     def always_true():
         return True
 
-    @robot_log_keyword
     def log_show_image(self, image_path: str):
         with open(image_path, mode='rb') as f:
             img_str = base64.b64encode(f.read()).decode()
             self.print(f'<img src="data:image/png;base64,{img_str}">', html=True)
 
-    @robot_log_keyword
     def robot_check_param(self, param_str: object, param_style: Union[str, type], default=None, error=False):
         if type(param_style) is str:
             param_style_str = param_style.lower()
@@ -241,6 +240,6 @@ class BasicCommon:
                 re_value = default
         return re_value
 
-    def robot_config_init(self):
+    def _robot_config_init(self):
         self._robot_config.add_rule('print_console', 'bool', default=False)
         self._robot_config.init(None, 'movoid_robotframework.ini', False)

@@ -9,15 +9,13 @@
 import math
 import random
 
-from ..decorator import robot_log_keyword
-from ..common import BasicCommon
+from ..basic import Basic
 
 
-class BasicCalculate(BasicCommon):
+class ActionCalculate(Basic):
     def __init__(self):
         super().__init__()
 
-    @robot_log_keyword
     def calculate_get_random(self, random_max=1, random_min=0, digit=3):
         """
         get random with a digit
@@ -37,8 +35,8 @@ class BasicCalculate(BasicCommon):
         re_value = round(real_value, digit)
         return re_value
 
-    @robot_log_keyword
-    def calculate_get_random_int(self, a, b):
+    @staticmethod
+    def calculate_get_random_int(a, b):
         """
         get random int.use random.randint
         :param a: min or max
@@ -47,7 +45,6 @@ class BasicCalculate(BasicCommon):
         """
         return random.randint(a, b)
 
-    @robot_log_keyword
     def calculate_average_similar(self, number1, number2, accuracy=1e-3):
         """
         计算两个数值或数组的平均值是否足够相近
@@ -81,7 +78,6 @@ class BasicCalculate(BasicCommon):
             self.print(f'return Fail!contrast two object <{number1}> and <{number2}> failed:{err}')
             return False
 
-    @robot_log_keyword
     def calculate_average_similar_in_digit(self, number1, number2, digit=3, offset_max=1.001):
         """
         计算两组数之间，在某一位之前是否完全
@@ -114,7 +110,6 @@ class BasicCalculate(BasicCommon):
             self.print(f'return Fail!contrast two object <{number1}> and <{number2}> failed:{err}')
             return False
 
-    @robot_log_keyword
     def calculate_each_similar_in_digit(self, list1, list2, digit=3, offset_max=1.001):
         """
         计算两组数之间，在某一位之前是否完全

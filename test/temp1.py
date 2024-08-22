@@ -1,7 +1,5 @@
 import sys
 
-from test_decorator import RF
-
 
 def temp1():
     print(__name__)

@@ -17,7 +17,6 @@ if VERSION:
     if VERSION == '6':
         import datetime
         import traceback
-        from robot.api import logger
         from robot.running.model import Keyword as RunningKeyword
         from robot.result.model import Keyword as ResultKeyword
         from robot.running.modelcombiner import ModelCombiner  # noqa
@@ -77,7 +76,6 @@ if VERSION:
     elif VERSION == '7':
         import datetime
         import traceback
-        from robot.api import logger
         from robot.running.model import Keyword as RunningKeyword
         from robot.result.model import Keyword as ResultKeyword
         from robot.output.logger import LOGGER
@@ -172,6 +170,11 @@ else:
 robot_log_keyword = _robot_log_keyword
 
 
+def robot_no_log_keyword(func):
+    setattr(func, '__robot_log', True)
+    return func
+
+
 def do_until_check(do_function, check_function, timeout=30, init_check=True, init_check_function=None, init_sleep=0, wait_before_check=0, do_interval=1, check_interval=0.2, error=True):
     """
     通过操作某个函数，达成某个最终的目的。如果检查未通过，那么会循环进行操作
@@ -217,6 +220,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
             check_text = f'check {check_function.__name__}{check_kwargs}'
             print(f'check action:{check_text}')
             if init_check:
+                print_text = ''
                 try:
                     check_bool = init_check_function(**check_kwargs)
                     if check_bool:
@@ -236,6 +240,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
             while total_time < timeout:
                 total_interval_time_point = time.time()
                 loop_time += 1
+                print_text = ''
                 try:
                     do_function(**do_kwargs)
                     print_text = f'end do {time.time() - start_time_point:.3f} second {loop_time} time'
@@ -336,6 +341,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
             check_text = f'check {check_function.__name__}{check_kwargs}'
             print(f'check action:{check_text}')
             if init_check:
+                print_text = ''
                 try:
                     check_bool = init_check_function(**check_kwargs)
                     if check_bool:
@@ -355,6 +361,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
             while total_time < timeout:
                 total_interval_time_point = time.time()
                 loop_time += 1
+                print_text = ''
                 try:
                     check_bool = check_function(**check_kwargs)
                     if check_bool:
@@ -450,6 +457,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
             while total_time < timeout:
                 total_interval_time_point = time.time()
                 loop_time += 1
+                print_text = ''
                 try:
                     do_bool = do_function(**do_kwargs)
                 except Exception as err:

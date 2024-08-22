@@ -10,8 +10,7 @@ import json
 from pathlib import Path
 from typing import Dict, Any, List
 
-from ..common import BasicCommon
-from ..decorator import robot_log_keyword
+from ..basic import Basic
 
 
 class ConfigItem:
@@ -181,14 +180,13 @@ class Config:
             self.now_use_label(label, override=override, clear=False)
 
 
-class BasicConfig(BasicCommon):
+class ActionConfig(Basic):
 
     def __init__(self):
         super().__init__()
         self.config = Config(print_func=self.print)
         self.set_robot_variable('config', self.config)
 
-    @robot_log_keyword
     def config_init(self, json_file: str = None):
         """
         初始化json文件，相当于重新选择json文件并读取生效
@@ -197,7 +195,6 @@ class BasicConfig(BasicCommon):
         self.config.init(json_file)
         return self.config
 
-    @robot_log_keyword
     def config_use_label(self, *labels: str, override: bool = True, clear: bool = False):
         """
         选择相应的label生效
@@ -208,21 +205,18 @@ class BasicConfig(BasicCommon):
         for label in labels:
             self.config.now_use_label(label, override=override, clear=clear)
 
-    @robot_log_keyword
     def config_show_now_value(self):
         """
         显示当前使用的所有的键值
         """
         self.config.show_now_value()
 
-    @robot_log_keyword
     def config_show_now_list(self):
         """
         显示当前使用的所有的label名
         """
         self.config.show_now_list()
 
-    @robot_log_keyword
     def config_use_suite_case_list(self, custom_key: str = '', override: bool = True, clear: bool = False):
         """
         使用特定key下的label list作为label并生效
