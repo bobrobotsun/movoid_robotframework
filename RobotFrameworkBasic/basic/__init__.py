@@ -3,12 +3,11 @@
 """
 # File          : __init__.py
 # Author        : Sun YiFan-Movoid
-# Time          : 2024/2/21 1:29
+# Time          : 2024/8/23 0:21
 # Description   : 
 """
-from .calculate import ActionCalculate
-from .config import ActionConfig
+from .common import BasicCommon
 
 
-class Action(ActionCalculate):
+class Basic(BasicCommon):
     pass

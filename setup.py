@@ -5,7 +5,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
 
 setup(
     name='movoid_robotframework',
-    version='1.6.0',
+    version='1.7.0',
     packages=find_packages(),
     url='',
     license='',
@@ -16,6 +16,6 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=['robotframework>=6.0,<8',
                       'movoid_config>=1.2.5',
-                      'movoid_function',
+                      'movoid_function>=1.7.1',
                       ],
 )

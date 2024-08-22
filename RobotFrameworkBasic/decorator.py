@@ -170,6 +170,11 @@ else:
 robot_log_keyword = _robot_log_keyword
 
 
+def robot_no_log_keyword(func):
+    setattr(func, '__robot_log', True)
+    return func
+
+
 def do_until_check(do_function, check_function, timeout=30, init_check=True, init_check_function=None, init_sleep=0, wait_before_check=0, do_interval=1, check_interval=0.2, error=True):
     """
     通过操作某个函数，达成某个最终的目的。如果检查未通过，那么会循环进行操作
