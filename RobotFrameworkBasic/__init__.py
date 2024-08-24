@@ -14,7 +14,8 @@ from .decorator import robot_log_keyword, robot_no_log_keyword, do_until_check, 
 from .error import RfError
 
 
-@decorate_class_function_exclude(robot_log_keyword, 'print', '^_')
+# @decorate_class_function_exclude(robot_log_keyword)
+@decorate_class_function_exclude(robot_log_keyword)
 class RobotBasic(Action):
     pass
 

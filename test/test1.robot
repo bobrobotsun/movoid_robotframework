@@ -16,6 +16,7 @@ Resource    ./do1.resource
     Error    asdfa.error
     Warn    asdfa.warn
     Get Robot Variable    global_var
+    Always True
 #    Log    ${_config}[a]
 #    Func1    ${_config}[a]
 

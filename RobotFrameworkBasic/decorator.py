@@ -31,7 +31,7 @@ if VERSION:
                 return_is_fail = list(return_is_fail)
 
             def dec(func):
-                if getattr(func, '__robot_log', False):
+                if getattr(func, '_robot_log', None) is not None:
                     return func
 
                 @wraps(func)
@@ -69,7 +69,7 @@ if VERSION:
                     else:
                         return re_value
 
-                setattr(wrapper, '__robot_log', True)
+                setattr(wrapper, '_robot_log', True)
                 return wrapper
 
             return dec
@@ -89,7 +89,7 @@ if VERSION:
                 return_is_fail = list(return_is_fail)
 
             def dec(func):
-                if getattr(func, '__robot_log', False):
+                if getattr(func, '_robot_log', None) is not None:
                     return func
 
                 @wraps(func)
@@ -126,7 +126,7 @@ if VERSION:
                     else:
                         return re_value
 
-                setattr(wrapper, '__robot_log', True)
+                setattr(wrapper, '_robot_log', True)
                 return wrapper
 
             return dec
@@ -140,7 +140,7 @@ else:
             return _robot_log_keyword()(return_is_fail[0])
 
         def dec(func):
-            if getattr(func, '__robot_log', False):
+            if getattr(func, '_robot_log', None) is not None:
                 return func
 
             @wraps(func)
@@ -162,7 +162,7 @@ else:
                     print(f'{func.__name__}: {re_value}({type(re_value).__name__}):is return value')
                     return re_value
 
-            setattr(func, '__robot_log', True)
+            setattr(wrapper, '_robot_log', True)
             return wrapper
 
         return dec
@@ -171,7 +171,7 @@ robot_log_keyword = _robot_log_keyword
 
 
 def robot_no_log_keyword(func):
-    setattr(func, '__robot_log', True)
+    setattr(func, '_robot_log', False)
     return func
 
 
@@ -231,7 +231,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                 except Exception as err:
                     print_text = f'error init {check_text}:{err}'
                 finally:
-                    if not getattr(init_check_function, '__robot_log', False):
+                    if not getattr(init_check_function, '_robot_log', False):
                         print(print_text)
             time.sleep(init_sleep)
             total_time = 0
@@ -247,7 +247,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                 except Exception as err:
                     print_text = f'error do {time.time() - start_time_point:.3f} second {loop_time} time :{err}'
                 finally:
-                    if not getattr(do_function, '__robot_log', False):
+                    if not getattr(do_function, '_robot_log', False):
                         print(print_text)
                 time.sleep(wait_before_check)
                 check_time = 0
@@ -268,7 +268,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                         time_now = time.time()
                         print_text = f'error check {time_now - start_time_point:.3f}/{time_now - check_time_point:.3f} second {loop_time}-{check_loop_time} time:{err}'
                     finally:
-                        if not getattr(check_function, '__robot_log', False):
+                        if not getattr(check_function, '_robot_log', False):
                             print(print_text)
                     check_interval_time = time.time() - check_interval_time_point
                     if check_interval_time < check_interval:
@@ -351,7 +351,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                 except Exception as err:
                     print_text = f'init {check_text} error:{err}'
                 finally:
-                    if not getattr(check_function, '__robot_log', False):
+                    if not getattr(check_function, '_robot_log', False):
                         print(print_text)
             time.sleep(init_sleep)
             total_time = 0
@@ -382,7 +382,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                     print_text = '{:.3f} second {} time {} error:{}'.format(time.time() - start_time_point, loop_time, check_text, err)
                     pass_time = 0
                 finally:
-                    if not getattr(check_function, '__robot_log', False):
+                    if not getattr(check_function, '_robot_log', False):
                         print(print_text)
                 total_interval_time = time.time() - total_interval_time_point
                 if total_interval_time < check_interval:
@@ -477,7 +477,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                         else:
                             return False
                 finally:
-                    if not getattr(do_function, '__robot_log', False):
+                    if not getattr(do_function, '_robot_log', False):
                         print(print_text)
                 time.sleep(wait_before_check)
                 try:
@@ -492,7 +492,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                     time_now = time.time()
                     print_text = f'error check {time_now - start_time_point:.3f} second {loop_time} time:{err}'
                 finally:
-                    if not getattr(check_function, '__robot_log', False):
+                    if not getattr(check_function, '_robot_log', False):
                         print(print_text)
                 total_interval_time = time.time() - total_interval_time_point
                 if total_interval_time < check_interval:
