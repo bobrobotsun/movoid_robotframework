@@ -9,9 +9,13 @@
 import math
 import random
 
+from movoid_function import decorate_class_function_exclude
+
+from ..decorator import robot_log_keyword
 from ..basic import Basic
 
 
+@decorate_class_function_exclude(robot_log_keyword)
 class ActionCalculate(Basic):
     def __init__(self):
         super().__init__()
@@ -36,6 +40,7 @@ class ActionCalculate(Basic):
         return re_value
 
     @staticmethod
+    @robot_log_keyword
     def calculate_get_random_int(a, b):
         """
         get random int.use random.randint

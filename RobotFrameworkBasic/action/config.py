@@ -9,8 +9,10 @@
 import json
 from pathlib import Path
 from typing import Dict, Any, List
+from movoid_function import decorate_class_function_exclude
 
 from ..basic import Basic
+from ..decorator import robot_log_keyword
 
 
 class ConfigItem:
@@ -180,6 +182,7 @@ class Config:
             self.now_use_label(label, override=override, clear=False)
 
 
+@decorate_class_function_exclude(robot_log_keyword)
 class ActionConfig(Basic):
 
     def __init__(self):
