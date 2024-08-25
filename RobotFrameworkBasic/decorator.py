@@ -170,8 +170,8 @@ else:
                 return func
 
             @wraps(func)
-            def wrapper(*args, _return_when_error=None, **kwargs):
-                arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, **kwargs)
+            def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, **kwargs):
+                arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, **kwargs)
                 print(func.__name__, *[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'])
                 re_value = None
                 temp_error = None
