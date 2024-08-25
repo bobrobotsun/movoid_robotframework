@@ -35,35 +35,48 @@ if VERSION:
                     return func
 
                 @wraps(func)
-                def wrapper(*args, _return_when_error=None, **kwargs):
-                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, **kwargs)
-                    data = RunningKeyword(func.__name__)
-                    result = ResultKeyword(func.__name__,
-                                           args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
-                                           doc=None if func.__doc__ is None else func.__doc__.replace('\n', '\n\n'))
-                    result.starttime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
-                    combine = ModelCombiner(data, result)
-                    LOGGER.start_keyword(combine)
+                def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, **kwargs):
+                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, **kwargs)
                     re_value = None
                     temp_error = None
-                    with OutputCapturer():
+                    if _log_keyword_structure:
+                        data = RunningKeyword(func.__name__)
+                        result = ResultKeyword(func.__name__,
+                                               args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
+                                               doc=None if func.__doc__ is None else func.__doc__.replace('\n', '\n\n'))
+                        result.starttime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
+                        combine = ModelCombiner(data, result)
+                        LOGGER.start_keyword(combine)
+                        with OutputCapturer():
+                            try:
+                                re_value = func(*args, **kwargs)
+                            except Exception as err:
+                                result.status = 'FAIL'
+                                print(traceback.format_exc())
+                                if _return_when_error is not None:
+                                    re_value = _return_when_error
+                                else:
+                                    temp_error = err
+                            else:
+                                print(f'{re_value}({type(re_value).__name__}):is return value')
+                                if re_value in return_is_fail:
+                                    result.status = 'FAIL'
+                                else:
+                                    result.status = 'PASS'
+                        result.endtime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
+                        LOGGER.end_keyword(combine)
+                    else:
+                        print(func.__name__, *[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'])
                         try:
                             re_value = func(*args, **kwargs)
                         except Exception as err:
-                            result.status = 'FAIL'
                             print(traceback.format_exc())
                             if _return_when_error is not None:
                                 re_value = _return_when_error
                             else:
                                 temp_error = err
                         else:
-                            print(f'{re_value}({type(re_value).__name__}):is return value')
-                            if re_value in return_is_fail:
-                                result.status = 'FAIL'
-                            else:
-                                result.status = 'PASS'
-                    result.endtime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
-                    LOGGER.end_keyword(combine)
+                            print(func.__name__, f'{re_value}({type(re_value).__name__}):is return value')
                     if temp_error is not None:
                         raise temp_error
                     else:
@@ -93,34 +106,47 @@ if VERSION:
                     return func
 
                 @wraps(func)
-                def wrapper(*args, _return_when_error=None, **kwargs):
-                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, **kwargs)
-                    data = RunningKeyword(func.__name__)
-                    result = ResultKeyword(func.__name__,
-                                           args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
-                                           doc=None if func.__doc__ is None else func.__doc__.replace('\n', '\n\n'))
-                    result.start_time = datetime.datetime.now()
-                    LOGGER.start_keyword(data, result)
+                def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, **kwargs):
+                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, **kwargs)
                     re_value = None
                     temp_error = None
-                    with OutputCapturer():
+                    if _log_keyword_structure:
+                        data = RunningKeyword(func.__name__)
+                        result = ResultKeyword(func.__name__,
+                                               args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
+                                               doc=None if func.__doc__ is None else func.__doc__.replace('\n', '\n\n'))
+                        result.start_time = datetime.datetime.now()
+                        LOGGER.start_keyword(data, result)
+                        with OutputCapturer():
+                            try:
+                                re_value = func(*args, **kwargs)
+                                print(f'{re_value}({type(re_value).__name__}):is return value')
+                            except Exception as err:
+                                result.status = 'FAIL'
+                                print(traceback.format_exc())
+                                if _return_when_error is not None:
+                                    re_value = _return_when_error
+                                else:
+                                    temp_error = err
+                            else:
+                                if re_value in return_is_fail:
+                                    result.status = 'FAIL'
+                                else:
+                                    result.status = 'PASS'
+                        result.end_time = datetime.datetime.now()
+                        LOGGER.end_keyword(data, result)
+                    else:
+                        print(func.__name__, *[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'])
                         try:
                             re_value = func(*args, **kwargs)
-                            print(f'{re_value}({type(re_value).__name__}):is return value')
                         except Exception as err:
-                            result.status = 'FAIL'
                             print(traceback.format_exc())
                             if _return_when_error is not None:
                                 re_value = _return_when_error
                             else:
                                 temp_error = err
                         else:
-                            if re_value in return_is_fail:
-                                result.status = 'FAIL'
-                            else:
-                                result.status = 'PASS'
-                    result.end_time = datetime.datetime.now()
-                    LOGGER.end_keyword(data, result)
+                            print(func.__name__, f'{re_value}({type(re_value).__name__}):is return value')
                     if temp_error is not None:
                         raise temp_error
                     else:
