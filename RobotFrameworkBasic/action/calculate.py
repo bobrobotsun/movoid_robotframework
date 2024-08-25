@@ -40,7 +40,6 @@ class ActionCalculate(Basic):
         return re_value
 
     @staticmethod
-    @robot_log_keyword
     def calculate_get_random_int(a, b):
         """
         get random int.use random.randint

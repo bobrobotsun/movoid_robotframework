@@ -181,7 +181,6 @@ class BasicCommon:
         return function, function_name
 
     @staticmethod
-    @robot_log_keyword
     def always_true():
         return True
 
@@ -190,7 +189,8 @@ class BasicCommon:
             img_str = base64.b64encode(f.read()).decode()
             self.print(f'<img src="data:image/png;base64,{img_str}">', html=True)
 
-    def robot_check_param(self, param_str: object, param_style: Union[str, type], default=None, error=False):
+    def robot_check_param(self, param_input: object, param_style: Union[str, type], default=None, error=False):
+        param_input = default if param_input is None else param_input
         if type(param_style) is str:
             param_style_str = param_style.lower()
         elif type(param_style) is type:
@@ -201,29 +201,29 @@ class BasicCommon:
                 raise TypeError(error_text)
             else:
                 return default
-        if type(param_str).__name__ == param_style_str:
+        if type(param_input).__name__ == param_style_str:
             self.print('style is correct, we do not change it.')
-            return param_str
-        self.print(f'try to change <{param_str}> to {param_style}')
+            return param_input
+        self.print(f'try to change <{param_input}> to {param_style}')
         try:
             if param_style_str in ('str',):
-                re_value = str(param_str)
+                re_value = str(param_input)
             elif param_style_str in ('int',):
-                re_value = int(param_str)
+                re_value = int(param_input)
             elif param_style_str in ('float',):
-                re_value = float(param_str)
+                re_value = float(param_input)
             elif param_style_str in ('bool',):
-                if param_str in ('true',):
+                if param_input in ('true',):
                     re_value = True
-                elif param_str in ('false',):
+                elif param_input in ('false',):
                     re_value = False
                 else:
-                    self.print(f'>{param_str}< is not a traditional bool, we use forced conversion.')
-                    re_value = bool(param_str)
+                    self.print(f'>{param_input}< is not a traditional bool, we use forced conversion.')
+                    re_value = bool(param_input)
             else:
-                re_value = eval(f'{param_style_str}({param_str})')
+                re_value = eval(f'{param_style_str}({param_input})')
         except Exception as err:
-            error_text = f'something wrong happened when we change <{param_str}> to <{param_style_str}>:\n{traceback.format_exc()}'
+            error_text = f'something wrong happened when we change <{param_input}> to <{param_style_str}>:\n{traceback.format_exc()}'
             if error:
                 self.error(error_text)
                 raise err
