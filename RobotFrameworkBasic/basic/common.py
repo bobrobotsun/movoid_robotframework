@@ -189,7 +189,7 @@ class BasicCommon:
             img_str = base64.b64encode(f.read()).decode()
             self.print(f'<img src="data:image/png;base64,{img_str}">', html=True)
 
-    def robot_check_param(self, param_input: object, param_style: Union[str, type], default=None, error=False):
+    def robot_check_param(self, param_input: object, param_style: Union[str, type], default=None, error=True):
         if param_input is None:
             print(f'input is None,so we use default >{default}<')
             change_input = default
@@ -206,9 +206,9 @@ class BasicCommon:
             else:
                 return default
         if type(change_input).__name__ == param_style_str:
-            self.print('style is correct, we do not change it.')
+            print('style is correct, we do not change it.')
             return change_input
-        self.print(f'try to change <{change_input}> to {param_style}')
+        print(f'try to change <{change_input}> to {param_style}')
         try:
             if param_style_str in ('str',):
                 re_value = str(change_input)
@@ -222,7 +222,7 @@ class BasicCommon:
                 elif change_input in ('false',):
                     re_value = False
                 else:
-                    self.print(f'>{change_input}< is not a traditional bool, we use forced conversion.')
+                    print(f'>{change_input}< is not a traditional bool, we use forced conversion.')
                     re_value = bool(change_input)
             else:
                 re_value = eval(f'{param_style_str}({change_input})')
@@ -232,8 +232,8 @@ class BasicCommon:
                 self.error(error_text)
                 raise err
             else:
-                self.print(error_text)
-                self.print(f'we use default value:<{default}>({type(default).__name__})')
+                print(error_text)
+                print(f'we use default value:<{default}>({type(default).__name__})')
                 re_value = default
         return re_value
 
@@ -241,3 +241,10 @@ class BasicCommon:
     def robot_config_init(self):
         self._robot_config.add_rule('print_console', 'bool', default=False)
         self._robot_config.init(None, 'movoid_robotframework.ini', False)
+
+    @robot_no_log_keyword
+    def debug_teardown(self, function, args, kwargs, re_value, error, trace_back, has_return):
+        if error:
+            self.error(self.get_suite_case_str(), function.__name__, args, kwargs, error)
+        if has_return:
+            return re_value
