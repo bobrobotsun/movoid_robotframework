@@ -131,6 +131,10 @@ class BasicCommon:
     def replace_builtin_print(self):
         replace_function(print, self.print)
 
+    @robot_log_keyword
+    def log(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True):
+        self.print(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush)
+
     @robot_no_log_keyword
     def debug(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True):
         self.print(*args, html=html, also_console=also_console, level='DEBUG', sep=sep, end=end, file=file, flush=flush)
