@@ -48,29 +48,32 @@ class BasicCommon:
         }
 
         @robot_no_log_keyword
-        def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True):
-            level = str(level).upper()
-            also_console = self._robot_config.print_console if also_console is None else bool(also_console)
-            print_text = str(sep).join([str(_) for _ in args])
-            print_text_end = print_text + str(end)
-            if file is None:
-                logger.write(print_text, level=level, html=html)
-            elif file == sys.stdout:
-                logger.write(print_text, html=html)
-            elif file == sys.stderr:
-                logger.error(print_text, html=html)
+        def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True, log=False):
+            if log:
+                self.log(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush)
             else:
-                file.write(print_text_end)
-                if flush:
-                    file.flush()
-            if also_console:
-                if level in ('WARN', 'ERROR'):
-                    # stream = sys.__stderr__
-                    pass
+                level = str(level).upper()
+                also_console = self._robot_config.print_console if also_console is None else bool(also_console)
+                print_text = str(sep).join([str(_) for _ in args])
+                print_text_end = print_text + str(end)
+                if file is None:
+                    logger.write(print_text, level=level, html=html)
+                elif file == sys.stdout:
+                    logger.write(print_text, html=html)
+                elif file == sys.stderr:
+                    logger.error(print_text, html=html)
                 else:
-                    stream = sys.__stdout__
-                    stream.write(print_text_end)
-                    stream.flush()
+                    file.write(print_text_end)
+                    if flush:
+                        file.flush()
+                if also_console:
+                    if level in ('WARN', 'ERROR'):
+                        # stream = sys.__stderr__
+                        pass
+                    else:
+                        stream = sys.__stdout__
+                        stream.write(print_text_end)
+                        stream.flush()
 
         def get_robot_variable(self, variable_name: str, default=None):
             return self.built.get_variable_value("${" + variable_name + "}", default)
@@ -107,11 +110,14 @@ class BasicCommon:
             return join_str.join(sc_list)
     else:
         @robot_no_log_keyword
-        def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True):  # noqa
-            level = str(level).upper()
-            if file is None and level == 'ERROR':
-                file = sys.__stderr__
-            print(*args, sep=sep, end=end, file=file, flush=flush)
+        def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True, log=False):  # noqa
+            if log:
+                self.log(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush)
+            else:
+                level = str(level).upper()
+                if file is None and level == 'ERROR':
+                    file = sys.__stderr__
+                print(*args, sep=sep, end=end, file=file, flush=flush)
 
         def get_robot_variable(self, variable_name: str, default=None):
             return self._robot_variable.get(variable_name, default)
@@ -133,23 +139,23 @@ class BasicCommon:
 
     @robot_log_keyword
     def log(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True):
-        self.print(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush)
+        self.print(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush, log=False)
 
     @robot_no_log_keyword
-    def debug(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True):
-        self.print(*args, html=html, also_console=also_console, level='DEBUG', sep=sep, end=end, file=file, flush=flush)
+    def debug(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True, log=False):
+        self.print(*args, html=html, also_console=also_console, level='DEBUG', sep=sep, end=end, file=file, flush=flush, log=log)
 
     @robot_no_log_keyword
-    def info(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True):
-        self.print(*args, html=html, also_console=also_console, level='INFO', sep=sep, end=end, file=file, flush=flush)
+    def info(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True, log=False):
+        self.print(*args, html=html, also_console=also_console, level='INFO', sep=sep, end=end, file=file, flush=flush, log=log)
 
     @robot_no_log_keyword
-    def warn(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True):
-        self.print(*args, html=html, also_console=also_console, level='WARN', sep=sep, end=end, file=file, flush=flush)
+    def warn(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True, log=False):
+        self.print(*args, html=html, also_console=also_console, level='WARN', sep=sep, end=end, file=file, flush=flush, log=log)
 
     @robot_no_log_keyword
-    def error(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True):
-        self.print(*args, html=html, also_console=also_console, level='ERROR', sep=sep, end=end, file=file, flush=flush)
+    def error(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True, log=False):
+        self.print(*args, html=html, also_console=also_console, level='ERROR', sep=sep, end=end, file=file, flush=flush, log=log)
 
     def analyse_json(self, value):
         """
@@ -194,6 +200,14 @@ class BasicCommon:
             self.print(f'<img src="data:image/png;base64,{img_str}">', html=True)
 
     def robot_check_param(self, param_input: object, param_style: Union[str, type], default=None, error=True):
+        """
+        检查参数是否符合要求
+        :param param_input:实际输入的参数
+        :param param_style: 参数类型，可以使用字符串或者直接输入类
+        :param default: 默认值。如果是None，那么会使用默认值
+        :param error: 当参数不符且转换失败时，是否报错。如果False，那么将不报错，并使用默认值
+        :return: 转换后的参数
+        """
         if param_input is None:
             print(f'input is None,so we use default >{default}<')
             change_input = default
