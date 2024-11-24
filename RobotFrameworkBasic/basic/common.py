@@ -172,6 +172,25 @@ class BasicCommon:
                 re_value = value
         return re_value
 
+    def analyse_number(self, value):
+        """
+        获取当前的内容并转换为number
+        :param value: 字符串就进行json转换，其他则不转换
+        :return:
+        """
+        self.print(f'try to change str to variable:({type(value).__name__}):{value}')
+        re_value = value
+        try:
+            re_value = int(value)
+        except ValueError:
+            try:
+                re_value = float(value)
+            except ValueError:
+                raise ValueError(f'cannot convert {value} to a number')
+        except:
+            raise ValueError(f'cannot convert {value} to a number')
+        return re_value
+
     def analyse_self_function(self, function_name):
         """
         尝试将函数名转换为自己能识别的函数

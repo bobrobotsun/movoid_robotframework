@@ -17,7 +17,10 @@ Resource    ./do1.resource
     Warn    asdfa.warn
     Get Robot Variable    global_var
     Always True
-    Print    123    log=${True}
+    Print    123    log=1
+    Assert Equal    111    111
+    Assert Equal    1.0    1    float
+    Assert Calculate    12    +    13    >    10    <=    25
 #    Log    ${_config}[a]
 #    Func1    ${_config}[a]
 
