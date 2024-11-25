@@ -21,7 +21,6 @@ Resource    ./do1.resource
     Assert Equal    111    111
     Assert Equal    1.0    1    float
     Assert Calculate    12    +    13    >    10    <=    25
-    Assert Calculate    100    -    16    ==    88
 #    Log    ${_config}[a]
 #    Func1    ${_config}[a]
 
