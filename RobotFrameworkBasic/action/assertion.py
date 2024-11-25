@@ -20,7 +20,8 @@ class ActionAssertion(Basic):
     def __init__(self):
         super().__init__()
 
-    def assert_equal(self, var1, var2, var_type=None):
+    def assert_equal(self, var1, var2, var_type=None, error_text=''):
+        error_text = str(error_text) if error_text else f'{var1} == {var2}'
         if isinstance(var_type, type):
             var_type_str = var_type.__name__
         else:
@@ -55,16 +56,18 @@ class ActionAssertion(Basic):
             self.print(f'try to assert >{real_var1}<({type(real_var1).__name__}) == >{real_var2}<({type(real_var2).__name__})')
         else:
             self.print(f'try to assert >{real_var1}< == >{real_var2}<')
-        assert real_var1 == real_var2
+        assert real_var1 == real_var2, error_text
 
-    def assert_calculate(self, *args, check_logic='all'):
+    def assert_calculate(self, *args, check_logic='all', error_text=''):
         """
         检查计算结果是否满足计算条件
         :param args: 一个变量、一个符号的模式进行输入
         :param check_logic: all就是所有判定条件都要满足；其他就是只要一个判定条件满足即可
+        :param error_text: 错误时的error文字，否则直接打印公式
         :raise AssertionError: 判定失败后raise
         """
         cal_list = [_ for _ in args]
+        error_text = str(error_text) if error_text else ' '.join(cal_list)
         result_list = []
         if len(cal_list) == 0:
             raise ValueError('nothing input')
@@ -95,7 +98,7 @@ class ActionAssertion(Basic):
                         temp_result = temp_value >= cal_value
                         self.print(f'{temp_result}: {temp_value} >= {cal_value}')
                         result_list.append(temp_result)
-                    elif operate == '==':
+                    elif operate in ('==', '='):
                         temp_result = temp_value == cal_value
                         self.print(f'{temp_result}: {temp_value} == {cal_value}')
                         result_list.append(temp_result)
@@ -137,7 +140,7 @@ class ActionAssertion(Basic):
                         raise ValueError(f'i do not know what is :{operate}')
         if check_logic == 'all':
             self.print(f'all be True: {result_list}')
-            assert all(result_list)
+            assert all(result_list), error_text
         else:
             self.print(f'has one True: {result_list}')
-            assert any(result_list)
+            assert any(result_list), error_text
