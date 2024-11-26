@@ -172,23 +172,64 @@ class BasicCommon:
                 re_value = value
         return re_value
 
-    def analyse_number(self, value):
+    def convert_value_to(self, var, var_type=None, return_type_str=False):
+        """
+        将当前变量转换为相应的类型
+        :param var: 变量
+        :param var_type: 类型，可以是字符串，但是字符串仅限str、float、int、bool、eval、json
+        :param return_type_str: 返回转换的类型符号
+        :return:
+        """
+        if isinstance(var_type, type):
+            var_type_str = var_type.__name__
+        else:
+            var_type_str = str(var_type)
+        if var_type is None:
+            re_value = var
+            var_type_str = None
+        elif var_type_str in ('str',):
+            re_value = str(var)
+        elif var_type_str in ('float',):
+            re_value = float(var)
+        elif var_type_str in ('int',):
+            re_value = int(var)
+        elif var_type_str in ('bool',):
+            re_value = bool(var)
+        elif var_type_str in ('eval',):
+            re_value = eval(var) if isinstance(var, str) else var
+        elif var_type_str in ('json',):
+            re_value = json.loads(var) if isinstance(var, str) else var
+        elif isinstance(var_type, type):
+            re_value = var_type(var)
+        else:
+            self.print(f'we do not know what is: {var_type}')
+            var_type_str = None
+            re_value = var
+        if return_type_str:
+            return re_value, var_type_str
+        else:
+            return re_value
+
+    def convert_value_to_number(self, value):
         """
         获取当前的内容并转换为number
-        :param value: 字符串就进行json转换，其他则不转换
+        :param value: 字符串就转换为int或float
         :return:
         """
         self.print(f'try to change str to variable:({type(value).__name__}):{value}')
         re_value = value
-        try:
-            re_value = int(value)
-        except ValueError:
+        if not isinstance(value, (int, float)):
             try:
-                re_value = float(value)
+                temp_value = int(value)
+                if temp_value == float(value):
+                    re_value = temp_value
             except ValueError:
+                try:
+                    re_value = float(value)
+                except:
+                    raise ValueError(f'cannot convert {value} to a number')
+            except:
                 raise ValueError(f'cannot convert {value} to a number')
-        except:
-            raise ValueError(f'cannot convert {value} to a number')
         return re_value
 
     def analyse_self_function(self, function_name):
