@@ -38,3 +38,12 @@ class Test_function_always_true_until_check:
         rf.assert_is_not_false(True)
         rf.assert_is_none(None)
         rf.assert_is_not_none(0)
+
+        rf.assert_is(True, True)
+        rf.assert_is_not(True, False)
+        rf.assert_in(1, [1, 2, 3])
+        rf.assert_not_in(1, [2, 3, 4])
+        rf.assert_isinstance(True, bool)
+        rf.assert_not_isinstance(123, str)
+        rf.assert_issubclass(AssertionError, Exception)
+        rf.assert_not_issubclass(str, bool)

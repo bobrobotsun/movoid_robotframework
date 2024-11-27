@@ -169,6 +169,46 @@ class ActionAssertion(Basic):
         self.print(f'{var1} is not False')
         assert var1 is not False
 
+    def assert_in(self, var1, var2):
+        """判断是否in"""
+        self.print(f'{var1} in {var2}')
+        assert var1 in var2
+
+    def assert_not_in(self, var1, var2):
+        """判断是否not in"""
+        self.print(f'{var1} not in {var2}')
+        assert var1 not in var2
+
+    def assert_is(self, var1, var2):
+        """判断是否is"""
+        self.print(f'{var1} is {var2}')
+        assert var1 is var2
+
+    def assert_is_not(self, var1, var2):
+        """判断是否not is"""
+        self.print(f'{var1} is not {var2}')
+        assert var1 is not var2
+
+    def assert_isinstance(self, var1, var2):
+        """判断是否isinstance"""
+        self.print(f'isinstance({var1}, {var2})')
+        assert isinstance(var1, var2)
+
+    def assert_not_isinstance(self, var1, var2):
+        """判断是否not isinstance"""
+        self.print(f'not isinstance({var1}, {var2})')
+        assert not isinstance(var1, var2)
+
+    def assert_issubclass(self, var1, var2):
+        """判断是否issubclass"""
+        self.print(f'issubclass({var1}, {var2})')
+        assert issubclass(var1, var2)
+
+    def assert_not_issubclass(self, var1, var2):
+        """判断是否not issubclass"""
+        self.print(f'not issubclass({var1}, {var2})')
+        assert not issubclass(var1, var2)
+
     def analyse_logic(self, *args):
         if len(args) == 3:
             if args[1] in self.assert_operate_arg:
