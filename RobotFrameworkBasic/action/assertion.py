@@ -22,7 +22,7 @@ class ActionAssertion(Basic):
     def __init__(self):
         super().__init__()
 
-    def assert_equal(self, var1, var2, var_type=None, error_text=''):
+    def assert_equal(self, var1, var2, var_type=None, error_text=None):
         error_text = str(error_text) if error_text else f'{var1} == {var2}'
         real_var1, var_type_str1 = self.convert_value_to(var1, var_type, return_type_str=True)
         real_var2, var_type_str2 = self.convert_value_to(var2, var_type, return_type_str=True)
@@ -32,7 +32,7 @@ class ActionAssertion(Basic):
             self.print(f'try to assert >{real_var1}< == >{real_var2}<')
         assert real_var1 == real_var2, error_text
 
-    def assert_not_equal(self, var1, var2, var_type=None, error_text=''):
+    def assert_not_equal(self, var1, var2, var_type=None, error_text=None):
         error_text = str(error_text) if error_text else f'{var1} != {var2}'
         real_var1, var_type_str1 = self.convert_value_to(var1, var_type, return_type_str=True)
         real_var2, var_type_str2 = self.convert_value_to(var2, var_type, return_type_str=True)
@@ -40,6 +40,22 @@ class ActionAssertion(Basic):
             self.print(f'try to assert >{real_var1}<({type(real_var1).__name__}) != >{real_var2}<({type(real_var2).__name__})')
         else:
             self.print(f'try to assert >{real_var1}< != >{real_var2}<')
+        assert real_var1 != real_var2, error_text
+
+    def assert_equal_float(self, var1, var2, digit=3, error_text=None):
+        digit = int(digit)
+        real_var1 = round(float(var1), digit)
+        real_var2 = round(float(var2), digit)
+        error_text = str(error_text) if error_text else f'{real_var1} == {real_var2}'
+        self.print(f'try to assert >{real_var1}< == >{real_var2}<')
+        assert real_var1 == real_var2, error_text
+
+    def assert_not_equal_float(self, var1, var2, digit=3, error_text=None):
+        digit = int(digit)
+        real_var1 = round(float(var1), digit)
+        real_var2 = round(float(var2), digit)
+        error_text = str(error_text) if error_text else f'{real_var1} != {real_var2}'
+        self.print(f'try to assert >{real_var1}< != >{real_var2}<')
         assert real_var1 != real_var2, error_text
 
     def assert_calculate(self, *args, check_logic='all', error_text=None):
