@@ -326,3 +326,55 @@ class BasicCommon:
             self.error(self.get_suite_case_str(), function.__name__, args, kwargs, error)
         if has_return:
             return re_value
+
+    def var_get(self, var):
+        """
+        设置值，主要是为了留个日志
+        :param var:
+        :return:
+        """
+        return var
+
+    def var_get_key(self, var, *keys):
+        """
+        获取dict/list的key，逐级获取
+        :param var:
+        :param keys:
+        :return:
+        """
+        temp = var
+        temp_print = 'var'
+        for index, key in enumerate(keys):
+            try:
+                temp = temp[key]
+            except:
+                if isinstance(temp, (list, set, tuple)):
+                    error_text = f', it only has index:{list(range(len(temp)))}'
+                elif hasattr(temp, 'keys'):
+                    error_text = f', it only has keys:{list(temp.keys())}'
+                else:
+                    error_text = ''
+                raise KeyError(f'{temp} has not key {key}{error_text}')
+            else:
+                temp_print += f'[{key}]'
+                self.print(f'{temp_print}={temp}')
+        return temp
+
+    def var_get_attr(self, var, *attrs):
+        """
+        获取 var 的 attr，逐级获取
+        :param var:
+        :param attrs:
+        :return:
+        """
+        temp = var
+        temp_print = 'var'
+        for index, attr in enumerate(attrs):
+            if hasattr(temp, attr):
+                temp = getattr(temp, attr)
+                temp_print += f'.{attr}'
+                self.print(f'{temp_print}={temp}({type(temp).__name__})')
+            else:
+                error_text = f', it only has attribute:{dir(temp)}'
+                raise AttributeError(f'{temp} has not key {attr}{error_text}')
+        return temp
