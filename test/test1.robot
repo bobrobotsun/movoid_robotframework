@@ -11,7 +11,7 @@ Resource    ./do1.resource
     Robot Check Param    false    bool
     Robot Check Param    ${EMPTY}    bool
     Robot Check Param    [1,2,3]    list
-    Robot Check Param    {1:1,2:2}    dict
+    Robot Check Param    {1:1,2:2,3:3,4:4,5:3,6:3,7:3,8:3,9:3,10:3,11:3,12:3,13:3,14:3,15:3,16:3,17:3,18:3,19:3,20:3,21:3,22:3,23:3}    dict
     Set Global Variable    ${global_var}    123
     Error    asdfa.error
     Warn    asdfa.warn

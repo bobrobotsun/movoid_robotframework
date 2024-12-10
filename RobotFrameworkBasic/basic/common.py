@@ -327,23 +327,28 @@ class BasicCommon:
         if has_return:
             return re_value
 
-    def var_get(self, var):
+    def var_get(self, var, var_name='str'):
         """
         设置值，主要是为了留个日志
         :param var:
+        :param var_name:var的字符串名称，方便显示
         :return:
         """
+        temp_print = var_name if var_name else 'var'
+        self.print(f'{temp_print}:{type(var).__name__} = {var}')
         return var
 
-    def var_get_key(self, var, *keys):
+    def var_get_key(self, var, *keys, var_name='str'):
         """
         获取dict/list的key，逐级获取
         :param var:
         :param keys:
+        :param var_name:var的字符串名称，方便显示
         :return:
         """
         temp = var
-        temp_print = 'var'
+        temp_print = var_name if var_name else 'var'
+        self.print(f'{temp_print}:{type(temp).__name__} = {temp}')
         for index, key in enumerate(keys):
             try:
                 temp = temp[key]
@@ -356,24 +361,29 @@ class BasicCommon:
                     error_text = ''
                 raise KeyError(f'{temp} has not key {key}{error_text}')
             else:
-                temp_print += f'[{key}]'
-                self.print(f'{temp_print}={temp}')
+                if isinstance(key, str):
+                    temp_print += f'["{key}"]'
+                else:
+                    temp_print += f'[{key}]'
+                self.print(f'{temp_print}:{type(temp).__name__} = {temp}')
         return temp
 
-    def var_get_attr(self, var, *attrs):
+    def var_get_attr(self, var, *attrs, var_name='str'):
         """
         获取 var 的 attr，逐级获取
         :param var:
         :param attrs:
+        :param var_name:var的字符串名称，方便显示
         :return:
         """
         temp = var
-        temp_print = 'var'
+        temp_print = var_name if var_name else 'var'
+        self.print(f'{temp_print}:{type(temp).__name__} = {temp}')
         for index, attr in enumerate(attrs):
             if hasattr(temp, attr):
                 temp = getattr(temp, attr)
                 temp_print += f'.{attr}'
-                self.print(f'{temp_print}={temp}({type(temp).__name__})')
+                self.print(f'{temp_print}:{type(temp).__name__} = {temp}')
             else:
                 error_text = f', it only has attribute:{dir(temp)}'
                 raise AttributeError(f'{temp} has not key {attr}{error_text}')

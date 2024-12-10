@@ -13,6 +13,50 @@ from movoid_function import wraps, wraps_func, reset_function_default_value, ana
 
 from .version import VERSION
 
+LOG_MAX_LENGTH = 100
+COMMON_DOC = ''':param _return_when_error : 输入任意非None值后，当error发生时，不再raise error，而是返回这个值
+:param _log_keyword_structure : bool : 默认True，生成一组robotframework格式的可展开的日志。如果False时，就不会把这个函数做成折叠状，而是只打印一些内容
+:param _return_name : str : 你可以把代码中这个函数赋值的变量str写在这儿，来让日志更加贴近python代码内容'''
+
+
+def _add_doc(func, new_doc):
+    func_doc = (func.__doc__.strip(' \n') + '\n') if (func.__doc__ and func.__doc__.strip(' \n')) else ''
+    new_doc = new_doc.strip(' \n') if new_doc.strip('\n') else ''
+    all_doc = func_doc + new_doc
+    all_doc = all_doc.strip(' \n') if all_doc.strip(' \n') else None
+    return all_doc
+
+
+def _str_at_most_length(var):
+    global LOG_MAX_LENGTH
+    var_str = str(var)
+    if len(var_str) >= LOG_MAX_LENGTH:
+        re_str = f'{var_str[:LOG_MAX_LENGTH - 3]}...'
+    else:
+        re_str = var_str
+    return re_str
+
+
+def _analyse_arg_dict_to_arg_list(arg_dict, **kwargs):
+    re_list = []
+    for arg_name, arg_value in arg_dict['arg'].items():
+        if arg_name != 'self':
+            re_list.append(f'{arg_name}:{type(arg_value).__name__}={_str_at_most_length(arg_value)}')
+    if 'args' in arg_dict:
+        for arg_name, arg_list in arg_dict['args'].items():
+            for arg_index, arg_value in enumerate(arg_list):
+                re_list.append(f'*{arg_name}[{arg_index}]:{type(arg_value).__name__}={_str_at_most_length(arg_value)}')
+    for kwarg_name, kwarg_value in arg_dict['kwarg'].items():
+        re_list.append(f'{kwarg_name}:{type(kwarg_value).__name__}={_str_at_most_length(kwarg_value)}')
+    if 'kwargs' in arg_dict:
+        for kwarg_name, kwarg_dict in arg_dict['kwargs'].items():
+            for kwarg_key, kwarg_value in kwarg_dict.items():
+                re_list.append(f'**{kwarg_name}[{kwarg_key}]:{type(kwarg_value).__name__}={_str_at_most_length(kwarg_value)}')
+    for k, v in kwargs.items():
+        re_list.append(f'{k}:{type(v).__name__}={_str_at_most_length(v)}')
+    return re_list
+
+
 if VERSION:
     if VERSION == '6':
         import datetime
@@ -35,15 +79,19 @@ if VERSION:
                     return func
 
                 @wraps(func)
-                def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, **kwargs):
-                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, **kwargs)
+                def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, _return_name=None, **kwargs):
+                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, **kwargs)
                     re_value = None
                     temp_error = None
+                    pre_re_str = '' if _return_name is None else f'{_return_name} = '
+                    arg_print_list = _analyse_arg_dict_to_arg_list(arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name)
+                    wrapper_doc = _add_doc(func, COMMON_DOC).replace('\n', '\n\n')
+
                     if _log_keyword_structure:
                         data = RunningKeyword(func.__name__)
                         result = ResultKeyword(func.__name__,
-                                               args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
-                                               doc=None if func.__doc__ is None else func.__doc__.replace('\n', '\n\n'))
+                                               args=arg_print_list,
+                                               doc=wrapper_doc)
                         result.starttime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
                         combine = ModelCombiner(data, result)
                         LOGGER.start_keyword(combine)
@@ -58,7 +106,7 @@ if VERSION:
                                 else:
                                     temp_error = err
                             else:
-                                print(f'{re_value}({type(re_value).__name__}):is return value')
+                                print(f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
                                 if re_value in return_is_fail:
                                     result.status = 'FAIL'
                                 else:
@@ -66,7 +114,7 @@ if VERSION:
                         result.endtime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
                         LOGGER.end_keyword(combine)
                     else:
-                        print(func.__name__, *[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'])
+                        print(func.__name__, *arg_print_list)
                         try:
                             re_value = func(*args, **kwargs)
                         except Exception as err:
@@ -76,12 +124,13 @@ if VERSION:
                             else:
                                 temp_error = err
                         else:
-                            print(func.__name__, f'{re_value}({type(re_value).__name__}):is return value')
+                            print(func.__name__, f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
                     if temp_error is not None:
                         raise temp_error
                     else:
                         return re_value
 
+                wrapper.__doc__ = _add_doc(wrapper, COMMON_DOC)
                 setattr(wrapper, '_robot_log', True)
                 return wrapper
 
@@ -106,21 +155,25 @@ if VERSION:
                     return func
 
                 @wraps(func)
-                def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, **kwargs):
-                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, **kwargs)
+                def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, _return_name=None, **kwargs):
+                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, **kwargs)
                     re_value = None
                     temp_error = None
+                    pre_re_str = f'{_return_name} = ' if _return_name else ''
+                    arg_print_list = _analyse_arg_dict_to_arg_list(arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name)
+                    wrapper_doc = _add_doc(func, COMMON_DOC).replace('\n', '\n\n')
+
                     if _log_keyword_structure:
                         data = RunningKeyword(func.__name__)
                         result = ResultKeyword(func.__name__,
-                                               args=[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'],
-                                               doc=None if func.__doc__ is None else func.__doc__.replace('\n', '\n\n'))
+                                               args=arg_print_list,
+                                               doc=wrapper_doc)
                         result.start_time = datetime.datetime.now()
                         LOGGER.start_keyword(data, result)
                         with OutputCapturer():
                             try:
                                 re_value = func(*args, **kwargs)
-                                print(f'{re_value}({type(re_value).__name__}):is return value')
+                                print(f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
                             except Exception as err:
                                 result.status = 'FAIL'
                                 print(traceback.format_exc())
@@ -136,7 +189,7 @@ if VERSION:
                         result.end_time = datetime.datetime.now()
                         LOGGER.end_keyword(data, result)
                     else:
-                        print(func.__name__, *[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'])
+                        print(func.__name__, *arg_print_list)
                         try:
                             re_value = func(*args, **kwargs)
                         except Exception as err:
@@ -146,12 +199,13 @@ if VERSION:
                             else:
                                 temp_error = err
                         else:
-                            print(func.__name__, f'{re_value}({type(re_value).__name__}):is return value')
+                            print(func.__name__, f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
                     if temp_error is not None:
                         raise temp_error
                     else:
                         return re_value
 
+                wrapper.__doc__ = _add_doc(wrapper, COMMON_DOC)
                 setattr(wrapper, '_robot_log', True)
                 return wrapper
 
@@ -170,11 +224,13 @@ else:
                 return func
 
             @wraps(func)
-            def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, **kwargs):
-                arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, **kwargs)
-                print(func.__name__, *[f'{_i}:{type(_v).__name__}={_v}' for _i, _v in arg_dict.items() if _i != 'self'])
+            def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, _return_name=None, **kwargs):
+                arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, **kwargs)
+                arg_print_list = _analyse_arg_dict_to_arg_list(arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name)
+                print(func.__name__, *arg_print_list)
                 re_value = None
                 temp_error = None
+                pre_re_str = '' if _return_name is None else f'{_return_name} = '
                 try:
                     re_value = func(*args, **kwargs)
                 except Exception as err:
@@ -185,9 +241,10 @@ else:
                 if temp_error is not None:
                     raise temp_error
                 else:
-                    print(f'{func.__name__}: {re_value}({type(re_value).__name__}):is return value')
+                    print(f'{func.__name__}: {pre_re_str}{re_value}({type(re_value).__name__}):is return value')
                     return re_value
 
+            wrapper.__doc__ = _add_doc(wrapper, COMMON_DOC)
             setattr(wrapper, '_robot_log', True)
             return wrapper
 
