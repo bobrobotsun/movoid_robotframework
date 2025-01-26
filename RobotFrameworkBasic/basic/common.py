@@ -327,7 +327,7 @@ class BasicCommon:
         if has_return:
             return re_value
 
-    def var_get(self, var, var_name='str'):
+    def var_get(self, var, var_name='var'):
         """
         设置值，主要是为了留个日志
         :param var:
@@ -338,7 +338,7 @@ class BasicCommon:
         self.print(f'{temp_print}:{type(var).__name__} = {var}')
         return var
 
-    def var_get_key(self, var, *keys, var_name='str'):
+    def var_get_key(self, var, *keys, var_name='var'):
         """
         获取dict/list的key，逐级获取
         :param var:
@@ -368,7 +368,7 @@ class BasicCommon:
                 self.print(f'{temp_print}:{type(temp).__name__} = {temp}')
         return temp
 
-    def var_get_attr(self, var, *attrs, var_name='str'):
+    def var_get_attr(self, var, *attrs, var_name='var'):
         """
         获取 var 的 attr，逐级获取
         :param var:
