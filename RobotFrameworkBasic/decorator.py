@@ -27,6 +27,11 @@ def _add_doc(func, new_doc):
     return all_doc
 
 
+def _show_doc(func_doc):
+    doc_str = str(func_doc) if func_doc else ''
+    return doc_str.replace('\n', '\n\n')
+
+
 def _str_at_most_length(var):
     global LOG_MAX_LENGTH
     var_str = str(var)
@@ -85,7 +90,7 @@ if VERSION:
                     temp_error = None
                     pre_re_str = '' if _return_name is None else f'{_return_name} = '
                     arg_print_list = _analyse_arg_dict_to_arg_list(arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name)
-                    wrapper_doc = _add_doc(func, COMMON_DOC).replace('\n', '\n\n')
+                    wrapper_doc = _show_doc(func.__doc__)
 
                     if _log_keyword_structure:
                         data = RunningKeyword(func.__name__)
@@ -161,7 +166,7 @@ if VERSION:
                     temp_error = None
                     pre_re_str = f'{_return_name} = ' if _return_name else ''
                     arg_print_list = _analyse_arg_dict_to_arg_list(arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name)
-                    wrapper_doc = _add_doc(func, COMMON_DOC).replace('\n', '\n\n')
+                    wrapper_doc = _show_doc(func.__doc__)
 
                     if _log_keyword_structure:
                         data = RunningKeyword(func.__name__)
