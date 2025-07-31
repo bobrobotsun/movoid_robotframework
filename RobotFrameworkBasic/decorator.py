@@ -33,7 +33,6 @@ def _show_doc(func_doc):
 
 
 def _str_at_most_length(var):
-    global LOG_MAX_LENGTH
     var_str = str(var)
     if len(var_str) >= LOG_MAX_LENGTH:
         re_str = f'{var_str[:LOG_MAX_LENGTH - 3]}...'
