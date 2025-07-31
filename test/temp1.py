@@ -22,7 +22,7 @@ class TempClass:
         pass
 
 
-class Temp1:
+class TempClass2:
     @robot_log_keyword
     def temp_function1(self, _show_return_info=False):
     # def temp_function1(self):
