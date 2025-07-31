@@ -1,5 +1,7 @@
 import sys
 
+from RobotFrameworkBasic import robot_log_keyword
+
 
 def temp1():
     print(__name__)
@@ -20,12 +22,21 @@ class TempClass:
         pass
 
 
+class Temp1:
+    @robot_log_keyword
+    def temp_function1(self, _show_return_info=False):
+    # def temp_function1(self):
+        return 123
+
+
 def tracing(*args, **kwargs):
     print(args, kwargs)
 
 
-sys.settrace(tracing)
-
-print(globals())
-print(locals())
-temp1()
+temp2 = TempClass2()
+temp2.temp_function1()
+# sys.settrace(tracing)
+#
+# print(globals())
+# print(locals())
+# temp1()

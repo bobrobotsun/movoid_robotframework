@@ -58,7 +58,8 @@ def _analyse_arg_dict_to_arg_list(arg_dict, **kwargs):
             for kwarg_key, kwarg_value in kwarg_dict.items():
                 re_list.append(f'**{kwarg_name}[{kwarg_key}]:{type(kwarg_value).__name__}={_str_at_most_length(kwarg_value)}')
     for k, v in kwargs.items():
-        re_list.append(f'{k}:{type(v).__name__}={_str_at_most_length(v)}')
+        if k not in arg_dict['arg'] and k not in arg_dict['kwarg']:
+            re_list.append(f'{k}:{type(v).__name__}={_str_at_most_length(v)}')
     return re_list
 
 
@@ -84,12 +85,18 @@ if VERSION:
                     return func
 
                 @wraps(func)
-                def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, _return_name=None, **kwargs):
-                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, **kwargs)
+                def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, _return_name=None, _show_return_info=None, **kwargs):
+                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, _show_return_info=_show_return_info, **kwargs)
                     re_value = None
                     temp_error = None
                     pre_re_str = '' if _return_name is None else f'{_return_name} = '
-                    arg_print_list = _analyse_arg_dict_to_arg_list(arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name)
+                    if '_show_return_info' in arg_dict['arg']:
+                        show_re_bool = arg_dict['arg']['_show_return_info'] is not False
+                    elif '_show_return_info' in arg_dict['kwarg']:
+                        show_re_bool = arg_dict['kwarg']['_show_return_info'] is not False
+                    else:
+                        show_re_bool = _show_return_info is not False
+                    arg_print_list = _analyse_arg_dict_to_arg_list(arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, _show_return_info=_show_return_info)
                     wrapper_doc = _show_doc(func.__doc__)
 
                     if _log_keyword_structure:
@@ -111,7 +118,8 @@ if VERSION:
                                 else:
                                     temp_error = err
                             else:
-                                print(f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
+                                if show_re_bool:
+                                    print(f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
                                 if re_value in return_is_fail:
                                     result.status = 'FAIL'
                                 else:
@@ -129,7 +137,8 @@ if VERSION:
                             else:
                                 temp_error = err
                         else:
-                            print(func.__name__, f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
+                            if show_re_bool:
+                                print(func.__name__, f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
                     if temp_error is not None:
                         raise temp_error
                     else:
@@ -160,12 +169,19 @@ if VERSION:
                     return func
 
                 @wraps(func)
-                def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, _return_name=None, **kwargs):
-                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, **kwargs)
+                def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, _return_name=None, _show_return_info=None, **kwargs):
+                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, _show_return_info=_show_return_info, **kwargs)
+
                     re_value = None
                     temp_error = None
                     pre_re_str = f'{_return_name} = ' if _return_name else ''
-                    arg_print_list = _analyse_arg_dict_to_arg_list(arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name)
+                    if '_show_return_info' in arg_dict['arg']:
+                        show_re_bool = arg_dict['arg']['_show_return_info'] is not False
+                    elif '_show_return_info' in arg_dict['kwarg']:
+                        show_re_bool = arg_dict['kwarg']['_show_return_info'] is not False
+                    else:
+                        show_re_bool = _show_return_info is not False
+                    arg_print_list = _analyse_arg_dict_to_arg_list(arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, _show_return_info=_show_return_info)
                     wrapper_doc = _show_doc(func.__doc__)
 
                     if _log_keyword_structure:
@@ -178,7 +194,6 @@ if VERSION:
                         with OutputCapturer():
                             try:
                                 re_value = func(*args, **kwargs)
-                                print(f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
                             except Exception as err:
                                 result.status = 'FAIL'
                                 print(traceback.format_exc())
@@ -187,6 +202,8 @@ if VERSION:
                                 else:
                                     temp_error = err
                             else:
+                                if show_re_bool:
+                                    print(f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
                                 if re_value in return_is_fail:
                                     result.status = 'FAIL'
                                 else:
@@ -204,7 +221,8 @@ if VERSION:
                             else:
                                 temp_error = err
                         else:
-                            print(func.__name__, f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
+                            if show_re_bool:
+                                print(func.__name__, f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
                     if temp_error is not None:
                         raise temp_error
                     else:
@@ -229,12 +247,18 @@ else:
                 return func
 
             @wraps(func)
-            def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, _return_name=None, **kwargs):
-                arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, **kwargs)
-                arg_print_list = _analyse_arg_dict_to_arg_list(arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name)
+            def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, _return_name=None, _show_return_info=None, **kwargs):
+                arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, _show_return_info=_show_return_info, **kwargs)
+                arg_print_list = _analyse_arg_dict_to_arg_list(arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, _show_return_info=_show_return_info)
                 print(func.__name__, *arg_print_list)
                 re_value = None
                 temp_error = None
+                if '_show_return_info' in arg_dict['arg']:
+                    show_re_bool = arg_dict['arg']['_show_return_info'] is not False
+                elif '_show_return_info' in arg_dict['kwarg']:
+                    show_re_bool = arg_dict['kwarg']['_show_return_info'] is not False
+                else:
+                    show_re_bool = _show_return_info is not False
                 pre_re_str = '' if _return_name is None else f'{_return_name} = '
                 try:
                     re_value = func(*args, **kwargs)
@@ -246,7 +270,8 @@ else:
                 if temp_error is not None:
                     raise temp_error
                 else:
-                    print(f'{func.__name__}: {pre_re_str}{re_value}({type(re_value).__name__}):is return value')
+                    if show_re_bool:
+                        print(f'{func.__name__}: {pre_re_str}{re_value}({type(re_value).__name__}):is return value')
                     return re_value
 
             wrapper.__doc__ = _add_doc(wrapper, COMMON_DOC)
