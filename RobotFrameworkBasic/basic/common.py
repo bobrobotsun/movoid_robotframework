@@ -36,6 +36,7 @@ class BasicCommon:
         self._robot_variable = {}
         self._robot_config = Config()
         self.robot_config_init()
+        self._no_error_when_exception = 0
         if VERSION:
             self.replace_builtin_print()
 
@@ -323,7 +324,8 @@ class BasicCommon:
     @robot_no_log_keyword
     def debug_teardown(self, function, args, kwargs, re_value, error, trace_back, has_return):
         if error:
-            self.error(self.get_suite_case_str(), function.__name__, args, kwargs, error)
+            if self._no_error_when_exception <= 0:
+                self.error(self.get_suite_case_str(), function.__name__, args, kwargs, error)
         if has_return:
             return re_value
 
@@ -388,3 +390,12 @@ class BasicCommon:
                 error_text = f', it only has attribute:{dir(temp)}'
                 raise AttributeError(f'{temp} has not key {attr}{error_text}')
         return temp
+
+    def sys_keyword_try(self):
+        self._no_error_when_exception += 1
+
+    def sys_keyword_try_except(self):
+        self._no_error_when_exception -= 1
+
+    def sys_keyword_try_else(self):
+        self._no_error_when_exception -= 1
