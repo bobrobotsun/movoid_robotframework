@@ -14,9 +14,11 @@ from movoid_function import wraps, wraps_func, reset_function_default_value, ana
 from .version import VERSION
 
 LOG_MAX_LENGTH = 100
-COMMON_DOC = ''':param _return_when_error : 输入任意非None值后，当error发生时，不再raise error，而是返回这个值
-:param _log_keyword_structure : bool : 默认True，生成一组robotframework格式的可展开的日志。如果False时，就不会把这个函数做成折叠状，而是只打印一些内容
-:param _return_name : str : 你可以把代码中这个函数赋值的变量str写在这儿，来让日志更加贴近python代码内容'''
+COMMON_DOC = ''':param _return_when_error: 输入任意非None值后，当error发生时，不再raise error，而是返回这个值
+:param _log_keyword_structure: bool : 默认True，生成一组robotframework格式的可展开的日志。如果False时，就不会把这个函数做成折叠状，而是只打印一些内容
+:param _return_name: str : 你可以把代码中这个函数赋值的变量str写在这儿，来让日志更加贴近python代码内容
+:param _show_return_info: bool :默认True，是否把return的信息打印出来。
+:param _simple_doc: bool :默认False，是否仅打印第一行doc信息'''
 
 
 def _add_doc(func, new_doc):
@@ -27,9 +29,12 @@ def _add_doc(func, new_doc):
     return all_doc
 
 
-def _show_doc(func_doc):
-    doc_str = str(func_doc) if func_doc else ''
-    return doc_str.replace('\n', '\n\n')
+def _show_doc(func_doc, simple_doc=False):
+    doc_str = str(func_doc).strip() if func_doc else ''
+    if simple_doc:
+        return doc_str.split('\n')[0]
+    else:
+        return doc_str.replace('\n', '\n\n')
 
 
 def _str_at_most_length(var):
@@ -84,8 +89,10 @@ if VERSION:
                     return func
 
                 @wraps(func)
-                def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, _return_name=None, _show_return_info=None, **kwargs):
-                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, _show_return_info=_show_return_info, **kwargs)
+                def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, _return_name=None, _show_return_info=None, _simple_doc=False, **kwargs):
+                    arg_dict = analyse_args_value_from_function(
+                        func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure,
+                        _return_name=_return_name, _show_return_info=_show_return_info, _simple_doc=_simple_doc, **kwargs)
                     re_value = None
                     temp_error = None
                     pre_re_str = '' if _return_name is None else f'{_return_name} = '
@@ -95,8 +102,10 @@ if VERSION:
                         show_re_bool = arg_dict['kwarg']['_show_return_info'] is not False
                     else:
                         show_re_bool = _show_return_info is not False
-                    arg_print_list = _analyse_arg_dict_to_arg_list(arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, _show_return_info=_show_return_info)
-                    wrapper_doc = _show_doc(func.__doc__)
+                    arg_print_list = _analyse_arg_dict_to_arg_list(
+                        arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure,
+                        _return_name=_return_name, _show_return_info=_show_return_info, _simple_doc=_simple_doc)
+                    wrapper_doc = _show_doc(func.__doc__, simple_doc=_simple_doc)
 
                     if _log_keyword_structure:
                         data = RunningKeyword(func.__name__)
@@ -168,9 +177,10 @@ if VERSION:
                     return func
 
                 @wraps(func)
-                def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, _return_name=None, _show_return_info=None, **kwargs):
-                    arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, _show_return_info=_show_return_info, **kwargs)
-
+                def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, _return_name=None, _show_return_info=None, _simple_doc=False, **kwargs):
+                    arg_dict = analyse_args_value_from_function(
+                        func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure,
+                        _return_name=_return_name, _show_return_info=_show_return_info, _simple_doc=_simple_doc, **kwargs)
                     re_value = None
                     temp_error = None
                     pre_re_str = f'{_return_name} = ' if _return_name else ''
@@ -180,8 +190,10 @@ if VERSION:
                         show_re_bool = arg_dict['kwarg']['_show_return_info'] is not False
                     else:
                         show_re_bool = _show_return_info is not False
-                    arg_print_list = _analyse_arg_dict_to_arg_list(arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, _show_return_info=_show_return_info)
-                    wrapper_doc = _show_doc(func.__doc__)
+                    arg_print_list = _analyse_arg_dict_to_arg_list(
+                        arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure,
+                        _return_name=_return_name, _show_return_info=_show_return_info, _simple_doc=_simple_doc)
+                    wrapper_doc = _show_doc(func.__doc__, simple_doc=_simple_doc)
 
                     if _log_keyword_structure:
                         data = RunningKeyword(func.__name__)
@@ -246,9 +258,13 @@ else:
                 return func
 
             @wraps(func)
-            def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, _return_name=None, _show_return_info=None, **kwargs):
-                arg_dict = analyse_args_value_from_function(func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, _show_return_info=_show_return_info, **kwargs)
-                arg_print_list = _analyse_arg_dict_to_arg_list(arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure, _return_name=_return_name, _show_return_info=_show_return_info)
+            def wrapper(*args, _return_when_error=None, _log_keyword_structure=True, _return_name=None, _show_return_info=None, _simple_doc=False, **kwargs):
+                arg_dict = analyse_args_value_from_function(
+                    func, *args, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure,
+                    _return_name=_return_name, _show_return_info=_show_return_info, _simple_doc=_simple_doc, **kwargs)
+                arg_print_list = _analyse_arg_dict_to_arg_list(
+                    arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure,
+                    _return_name=_return_name, _show_return_info=_show_return_info, _simple_doc=_simple_doc)
                 print(func.__name__, *arg_print_list)
                 re_value = None
                 temp_error = None
@@ -287,6 +303,16 @@ def robot_no_log_keyword(func):
     return func
 
 
+DOC_DO_UNTIL_CHECK = ''':param timeout:最大时长/超时。检查超过这个时长后，会认为操作失败.
+:param init_check:是否进行初始检查，如果为True，那么会在操作前进行检查，如果通过，那么会跳过操作，直接结束
+:param init_sleep:初始的等待时间，在初始检查前进行的等待，不计入整体timeout时间，一般配合初始检查init_check=True使用
+:param wait_before_check:在常规检查前的等待时间，一般是和上一次的操作存在一定的等待时间，保证上次的操作可以真实地
+:param do_interval:两次操作之间地最小间隔。一般是检查结束后，到操作之前的时间。主要是为了保证不要进行太多次的循环
+:param check_interval:连续两次检查之间的时间间隔，默认值为1，如果想要进行更细致的循环检查，可以将这个数值设置得更小
+:param error:当检查失败后，是否raise一个error。默认为True，会raise。
+'''
+
+
 def do_until_check(do_function, check_function, timeout=30, init_check=True, init_check_function=None, init_sleep=0, wait_before_check=0, do_interval=1, check_interval=0.2, error=True):
     """
     通过操作某个函数，达成某个最终的目的。如果检查未通过，那么会循环进行操作
@@ -294,7 +320,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
         当然了，你也可以套在一个有价值的函数上，但是这个函数的所有痕迹都会被抹除
     :param do_function:主动操作的函数，传入函数，不需要返回值
     :param check_function:检查函数，返回值必须是一个bool值，或者返回值会被强制转换为bool
-    :param timeout:最大时常/超时。检查超过这个时常后，会认为操作失败.
+    :param timeout:最大时长/超时。检查超过这个时常后，会认为操作失败.
     :param init_check:是否进行初始检查，如果为True，那么会在操作前进行检查，如果通过，那么会跳过操作，直接结束
     :param init_check_function:初始检查函数，返回值必须是一个bool值，或者返回值会被强制转换为bool，如果存在。那么初始检查会考虑使用这个。这个函数的参数必须和check_function完全一致，否则会报错
     :param init_sleep:初始的等待时间，在初始检查前进行的等待，不计入整体timeout时间，一般配合初始检查init_check=True使用
@@ -326,7 +352,9 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                          check_interval=_check_interval,  # noqa
                          error=_error):  # noqa
             do_kwargs['_return_when_error'] = False
+            do_kwargs['_simple_doc'] = True
             check_kwargs['_return_when_error'] = False
+            check_kwargs['_simple_doc'] = True
             do_text = f'do {do_function.__name__}{do_kwargs}'
             print(f'do action:{do_text}')
             check_text = f'check {check_function.__name__}{check_kwargs}'
@@ -411,9 +439,19 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
             else:
                 return re_value
 
+        wrapper.__doc__ = _add_doc(wrapper, DOC_DO_UNTIL_CHECK)
         return wrapper
 
     return dec
+
+
+DOC_WAIT_UNTIL_STABLE = ''':param timeout:限时。只有在这个时长范围内一直通过，才算成功.
+:param init_check:是否进行初始检查，如果为True，那j么会在操作前进行检查，如果通过，那么会跳过操作，直接结束
+:param init_sleep:初始的等待时间，在初始检查前进行的等待，不计入整体timeout时间，一般配合初始检查init_check=True使用
+:param stable_time:需要达到的稳定状态的持续时间，只有一直判定正确超过这个时间，才能算过
+:param check_interval:连续两次检查之间的时间间隔，默认值为0.2，如果想要进行更细致的循环检查，可以将这个数值设置得更小
+:param error:当检查失败后，是否raise一个error。默认为True，会raise。
+'''
 
 
 def wait_until_stable(check_function, timeout=30, init_check=True, init_check_function=None, init_sleep=0, stable_time=3, check_interval=0.2, error=True):
@@ -450,6 +488,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                          check_interval=_check_interval,  # noqa
                          error=_error):  # noqa
             check_kwargs['_return_when_error'] = False
+            check_kwargs['_simple_doc'] = True
             check_text = f'check {check_function.__name__}{check_kwargs}'
             print(f'check action:{check_text}')
             if init_check:
@@ -521,9 +560,18 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
             else:
                 return re_value
 
+        wrapper.__doc__ = _add_doc(wrapper, DOC_WAIT_UNTIL_STABLE)
         return wrapper
 
     return dec
+
+
+DOC_TRUE_UNTIL_CHECK = ''':param timeout:最大时常/超时。检查超过这个时常后，会认为操作失败.
+:param init_sleep:初始的等待时间，在初始检查前进行的等待，不计入整体timeout时间，一般配合初始检查init_check=True使用
+:param wait_before_check:在常规检查前的等待时间，一般是和上一次的操作存在一定的等待时间，保证上次的操作可以真实地
+:param check_interval:连续两次检查之间的时间间隔，默认值为1，如果想要进行更细致的循环检查，可以将这个数值设置得更小
+:param error:当检查失败后，是否raise一个error。默认为True，会raise。
+'''
 
 
 def always_true_until_check(do_function, check_function, timeout=30, init_sleep=0, wait_before_check=0, check_interval=0.2, error=True):
@@ -557,7 +605,9 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                          check_interval=_check_interval,  # noqa
                          error=_error):  # noqa
             do_kwargs['_return_when_error'] = False
+            do_kwargs['_simple_doc'] = True
             check_kwargs['_return_when_error'] = False
+            check_kwargs['_simple_doc'] = True
             do_text = f'always true {do_function.__name__}{do_kwargs}'
             print(f'always true action:{do_text}')
             check_text = f'check {check_function.__name__}{check_kwargs}'
@@ -631,6 +681,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
             else:
                 return re_value
 
+        wrapper.__doc__ = _add_doc(wrapper, DOC_TRUE_UNTIL_CHECK)
         return wrapper
 
     return dec
