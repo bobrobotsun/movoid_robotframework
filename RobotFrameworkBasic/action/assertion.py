@@ -10,7 +10,7 @@ import math
 
 from movoid_function import decorate_class_function_exclude
 
-from ..decorator import robot_log_keyword
+from ..decorator import robot_log_keyword, robot_no_log_keyword
 from ..basic import Basic
 
 
@@ -22,8 +22,19 @@ class ActionAssertion(Basic):
     def __init__(self):
         super().__init__()
 
-    def assert_equal(self, var1, var2, var_type=None, error_text=None):
-        error_text = str(error_text) if error_text else f'{var1} == {var2}'
+    @robot_no_log_keyword
+    def _assert_text(self, error_text, *args, error_format=None):
+        if isinstance(error_format, str):
+            for index, var in enumerate(args):
+                error_format = error_format.replace(f'{{{index}}}', var)
+            error_text = error_format
+        return error_text
+
+    def assert_equal(self, var1, var2, var_type=None, error_text=None, error_format=None):
+        error_text = self._assert_text(
+            str(error_text) if error_text else f'{var1} == {var2}',
+            var1, var2,
+            error_format=error_format)
         real_var1, var_type_str1 = self.convert_value_to(var1, var_type, return_type_str=True)
         real_var2, var_type_str2 = self.convert_value_to(var2, var_type, return_type_str=True)
         if var_type_str1 is None or var_type_str2 is None:
@@ -32,8 +43,11 @@ class ActionAssertion(Basic):
             self.print(f'try to assert >{real_var1}< == >{real_var2}<')
         assert real_var1 == real_var2, error_text
 
-    def assert_not_equal(self, var1, var2, var_type=None, error_text=None):
-        error_text = str(error_text) if error_text else f'{var1} != {var2}'
+    def assert_not_equal(self, var1, var2, var_type=None, error_text=None, error_format=None):
+        error_text = self._assert_text(
+            str(error_text) if error_text else f'{var1} == {var2}',
+            var1, var2,
+            error_format=error_format)
         real_var1, var_type_str1 = self.convert_value_to(var1, var_type, return_type_str=True)
         real_var2, var_type_str2 = self.convert_value_to(var2, var_type, return_type_str=True)
         if var_type_str1 is None or var_type_str2 is None:
@@ -42,32 +56,42 @@ class ActionAssertion(Basic):
             self.print(f'try to assert >{real_var1}< != >{real_var2}<')
         assert real_var1 != real_var2, error_text
 
-    def assert_equal_float(self, var1, var2, digit=3, error_text=None):
+    def assert_equal_float(self, var1, var2, digit=3, error_text=None, error_format=None):
         digit = int(digit)
         real_var1 = round(float(var1), digit)
         real_var2 = round(float(var2), digit)
-        error_text = str(error_text) if error_text else f'{real_var1} == {real_var2}'
+        error_text = self._assert_text(
+            str(error_text) if error_text else f'{real_var1} == {real_var2}',
+            var1, var2,
+            error_format=error_format)
         self.print(f'try to assert >{real_var1}< == >{real_var2}<')
         assert real_var1 == real_var2, error_text
 
-    def assert_not_equal_float(self, var1, var2, digit=3, error_text=None):
+    def assert_not_equal_float(self, var1, var2, digit=3, error_text=None, error_format=None):
         digit = int(digit)
         real_var1 = round(float(var1), digit)
         real_var2 = round(float(var2), digit)
-        error_text = str(error_text) if error_text else f'{real_var1} != {real_var2}'
+        error_text = self._assert_text(
+            str(error_text) if error_text else f'{real_var1} != {real_var2}',
+            var1, var2,
+            error_format=error_format)
         self.print(f'try to assert >{real_var1}< != >{real_var2}<')
         assert real_var1 != real_var2, error_text
 
-    def assert_calculate(self, *args, check_logic='all', error_text=None):
+    def assert_calculate(self, *args, check_logic='all', error_text=None, error_format=None):
         """
         检查计算结果是否满足计算条件
         :param args: 一个变量、一个符号的模式进行输入
         :param check_logic: all就是所有判定条件都要满足；其他就是只要一个判定条件满足即可
         :param error_text: 错误时的error文字，否则直接打印公式
+        :param error_text: 错误时的error文字，否则直接打印公式
         :raise AssertionError: 判定失败后raise
         """
         cal_list = [_ for _ in args]
-        error_text = str(error_text) if error_text else ' '.join([str(_) for _ in cal_list])
+        error_text = self._assert_text(
+            str(error_text) if error_text else ' '.join([str(_) for _ in cal_list]),
+            *args,
+            error_format=error_format)
         result_list = []
         if len(cal_list) == 0:
             raise ValueError('nothing input')
@@ -145,85 +169,141 @@ class ActionAssertion(Basic):
             self.print(f'has one True: {result_list}')
             assert any(result_list), error_text
 
-    def assert_true(self, var1):
+    def assert_true(self, var1, error_format=None):
         """转bool后，是否为True"""
-        self.print(f'{var1} should be True')
-        assert bool(var1)
+        error_text = self._assert_text(
+            f'{var1} should be True',
+            var1,
+            error_format=error_format)
+        assert bool(var1), error_text
 
-    def assert_false(self, var1):
+    def assert_false(self, var1, error_format=None):
         """转bool后，是否为True"""
-        self.print(f'{var1} should be False')
-        assert not bool(var1)
+        error_text = self._assert_text(
+            f'{var1} should be False'
+            , var1
+            , error_format=error_format)
+        assert not bool(var1), error_text
 
-    def assert_is_none(self, var1):
+    def assert_is_none(self, var1, error_format=None):
         """判断是否是None"""
-        self.print(f'{var1} is None')
-        assert var1 is None
+        error_text = self._assert_text(
+            f'{var1} should be None'
+            , var1
+            , error_format=error_format)
+        assert var1 is None, error_text
 
-    def assert_is_not_none(self, var1):
+    def assert_is_not_none(self, var1, error_format=None):
         """判断是否是None"""
-        self.print(f'{var1} is not None')
-        assert var1 is not None
+        error_text = self._assert_text(
+            f'{var1} should not be None'
+            , var1
+            , error_format=error_format)
+        assert var1 is not None, error_text
 
-    def assert_is_true(self, var1):
+    def assert_is_true(self, var1, error_format=None):
         """判断是否是True"""
-        self.print(f'{var1} is True')
-        assert var1 is True
+        error_text = self._assert_text(
+            f'{var1} should True'
+            , var1
+            , error_format=error_format)
+        assert var1 is True, error_text
 
-    def assert_is_not_true(self, var1):
+    def assert_is_not_true(self, var1, error_format=None):
         """判断是否不是True"""
-        self.print(f'{var1} is not True')
-        assert var1 is not True
+        error_text = self._assert_text(
+            f'{var1} should not be True'
+            , var1
+            , error_format=error_format)
+        assert var1 is not True, error_text
 
-    def assert_is_false(self, var1):
+    def assert_is_false(self, var1, error_format=None):
         """判断是否是False"""
-        self.print(f'{var1} is False')
-        assert var1 is False
+        error_text = self._assert_text(
+            f'{var1} should be False'
+            , var1
+            , error_format=error_format)
+        assert var1 is False, error_text
 
-    def assert_is_not_false(self, var1):
+    def assert_is_not_false(self, var1, error_format=None):
         """判断是否不是False"""
-        self.print(f'{var1} is not False')
-        assert var1 is not False
+        error_text = self._assert_text(
+            f'{var1} should not be False'
+            , var1
+            , error_format=error_format)
+        assert var1 is not False, error_text
 
-    def assert_in(self, var1, var2):
+    def assert_in(self, var1, var2, error_format=None):
         """判断是否in"""
         self.print(f'{var1} in {var2}')
-        assert var1 in var2
+        error_text = self._assert_text(
+            f'{var1} should in {var2}'
+            , var1
+            , error_format=error_format)
+        assert var1 in var2, error_text
 
-    def assert_not_in(self, var1, var2):
+    def assert_not_in(self, var1, var2, error_format=None):
         """判断是否not in"""
         self.print(f'{var1} not in {var2}')
-        assert var1 not in var2
+        error_text = self._assert_text(
+            f'{var1} is None'
+            , var1
+            , error_format=error_format)
+        assert var1 not in var2, error_text
 
-    def assert_is(self, var1, var2):
+    def assert_is(self, var1, var2, error_format=None):
         """判断是否is"""
         self.print(f'{var1} is {var2}')
-        assert var1 is var2
+        error_text = self._assert_text(
+            f'{var1} is None'
+            , var1
+            , error_format=error_format)
+        assert var1 is var2, error_text
 
-    def assert_is_not(self, var1, var2):
+    def assert_is_not(self, var1, var2, error_format=None):
         """判断是否not is"""
         self.print(f'{var1} is not {var2}')
-        assert var1 is not var2
+        error_text = self._assert_text(
+            f'{var1} is None'
+            , var1
+            , error_format=error_format)
+        assert var1 is not var2, error_text
 
-    def assert_isinstance(self, var1, var2):
+    def assert_isinstance(self, var1, var2, error_format=None):
         """判断是否isinstance"""
         self.print(f'isinstance({var1}, {var2})')
-        assert isinstance(var1, var2)
+        error_text = self._assert_text(
+            f'should isinstance({var1}, {var2})'
+            , var1
+            , error_format=error_format)
+        assert isinstance(var1, var2), error_text
 
-    def assert_not_isinstance(self, var1, var2):
+    def assert_not_isinstance(self, var1, var2, error_format=None):
         """判断是否not isinstance"""
         self.print(f'not isinstance({var1}, {var2})')
-        assert not isinstance(var1, var2)
+        error_text = self._assert_text(
+            f'should not isinstance({var1}, {var2})'
+            , var1
+            , error_format=error_format)
+        assert not isinstance(var1, var2), error_text
 
-    def assert_issubclass(self, var1, var2):
+    def assert_issubclass(self, var1, var2, error_format=None):
         """判断是否issubclass"""
         self.print(f'issubclass({var1}, {var2})')
-        assert issubclass(var1, var2)
+        error_text = self._assert_text(
+            f'should issubclass({var1}, {var2})'
+            , var1
+            , error_format=error_format)
+        assert issubclass(var1, var2), error_text
 
-    def assert_not_issubclass(self, var1, var2):
+    def assert_not_issubclass(self, var1, var2, error_format=None):
         """判断是否not issubclass"""
         self.print(f'not issubclass({var1}, {var2})')
-        assert not issubclass(var1, var2)
+        error_text = self._assert_text(
+            f'should not issubclass({var1}, {var2})'
+            , var1
+            , error_format=error_format)
+        assert not issubclass(var1, var2), error_text
 
     def analyse_logic(self, *args):
         if len(args) == 3:
@@ -263,13 +343,17 @@ class ActionAssertion(Basic):
             raise SyntaxError(f'unknown structure: {args}')
         return re_value
 
-    def assert_logic(self, *args, error_text=None):
+    def assert_logic(self, *args, error_text=None, error_format=None):
         """
         使用逻辑not、and、or和判断符号，进行bool值的判断
         :param args: 所有的变量、计算符号、逻辑符号
         :param error_text: 错误文本，如果不填，判断失败时，会显示原始公式
         """
         error_text = str(error_text) if error_text else ' '.join([str(_) for _ in args])
+        error_text = self._assert_text(
+            str(error_text) if error_text else ' '.join([str(_) for _ in args])
+            , *args
+            , error_format=error_format)
         logic_list = []
         temp_list = []
         for i in args:

@@ -18,7 +18,7 @@ Resource    ./do1.resource
     Get Robot Variable    global_var
     Always True
     Print    123    log=1
-    Assert Equal    111    111
+    Assert Equal    111    111    error_format={0}不应该等于{1}
     Assert Equal    1.0    1    float
     Assert Calculate    12    +    13    >    10    <=    25
     ${number1}    Convert Value To Number    1
@@ -33,5 +33,6 @@ Resource    ./do1.resource
 #    Func1    ${_config}[a]
 
 #02_do2
+#    test123
 #    Log    ${_config}[a]
 #    Func1    ${_config}[a]
