@@ -26,7 +26,7 @@ class ActionAssertion(Basic):
     def _assert_text(self, error_text, *args, error_format=None):
         if isinstance(error_format, str):
             for index, var in enumerate(args):
-                error_format = error_format.replace(f'{{{index}}}', var)
+                error_format = error_format.replace(f'{{{index}}}', str(var))
             error_text = error_format
         return error_text
 
