@@ -359,13 +359,15 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
             print(f'do action:{do_text}')
             check_text = f'check {check_function.__name__}{check_kwargs}'
             print(f'check action:{check_text}')
+            _latest_check_return = None
             if init_check:
                 print_text = ''
                 try:
                     check_bool = init_check_function(**check_kwargs)
+                    _latest_check_return = check_bool
                     if check_bool:
                         print_text = f'pass init {check_text}.do_until_check end.'
-                        return True
+                        return _latest_check_return
                     else:
                         print_text = f'fail init {check_text}.'
                 except Exception as err:
@@ -398,10 +400,11 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                     check_loop_time += 1
                     try:
                         check_bool = check_function(**check_kwargs)
+                        _latest_check_return = check_bool
                         time_now = time.time()
                         if check_bool:
                             print_text = f'pass check {time_now - start_time_point:.3f}/{time_now - check_time_point:.3f} second {loop_time}-{check_loop_time} time.do until check end.'
-                            return True
+                            return _latest_check_return
                         else:
                             print_text = f'fail check {time_now - start_time_point:.3f}/{time_now - check_time_point:.3f} second {loop_time}-{check_loop_time} time.'
                     except Exception as err:
@@ -425,12 +428,12 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                     return AssertionError(print_text)
                 else:
                     print(print_text)
-                    return False
+                    return _latest_check_return
 
-        @robot_log_keyword
         def raising_part(err):
             raise err
 
+        @robot_log_keyword
         @wraps(running_part)
         def wrapper(*args, **kwargs):
             re_value = running_part(*args, **kwargs)
@@ -491,10 +494,12 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
             check_kwargs['_simple_doc'] = True
             check_text = f'check {check_function.__name__}{check_kwargs}'
             print(f'check action:{check_text}')
+            _latest_check_return = None
             if init_check:
                 print_text = ''
                 try:
                     check_bool = init_check_function(**check_kwargs)
+                    _latest_check_return = check_bool
                     if check_bool:
                         print_text = f'init {check_text} pass.'
                     else:
@@ -515,6 +520,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                 print_text = ''
                 try:
                     check_bool = check_function(**check_kwargs)
+                    _latest_check_return = check_bool
                     if check_bool:
                         print_text = '{:.3f} second {} time {} pass.'.format(time.time() - start_time_point, loop_time, check_text)
                         if pass_time == 0:
@@ -524,7 +530,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                             now_stable_time = time.time() - pass_time
                         print_text += ' it has been stable for {:.3f} seconds.'.format(now_stable_time)
                         if now_stable_time > stable_time:
-                            return True
+                            return _latest_check_return
                     else:
                         print_text = '{:.3f} second {} time {} fail.'.format(time.time() - start_time_point, loop_time, check_text)
                         pass_time = 0
@@ -546,12 +552,12 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                     return AssertionError(print_text)
                 else:
                     print(print_text)
-                    return False
+                    return _latest_check_return
 
-        @robot_log_keyword
         def raising_part(err):
             raise err
 
+        @robot_log_keyword
         @wraps(running_part)
         def wrapper(*args, **kwargs):
             re_value = running_part(*args, **kwargs)
@@ -616,6 +622,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
             total_time = 0
             start_time_point = time.time()
             loop_time = 0
+            _latest_check_return = None
             while total_time < timeout:
                 total_interval_time_point = time.time()
                 loop_time += 1
@@ -627,7 +634,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                     if error:
                         return AssertionError(print_text)
                     else:
-                        return False
+                        return _latest_check_return
                 else:
                     time_now = time.time()
                     if do_bool:
@@ -637,17 +644,18 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                         if error:
                             return AssertionError(print_text)
                         else:
-                            return False
+                            return _latest_check_return
                 finally:
                     if not getattr(do_function, '_robot_log', False):
                         print(print_text)
                 time.sleep(wait_before_check)
                 try:
                     check_bool = check_function(**check_kwargs)
+                    _latest_check_return = check_bool
                     time_now = time.time()
                     if check_bool:
                         print_text = f'pass check {time_now - start_time_point:.3f} second {loop_time} time.do until check end.'
-                        return True
+                        return _latest_check_return
                     else:
                         print_text = f'fail check {time_now - start_time_point:.3f} second {loop_time} time.'
                 except Exception as err:
@@ -667,12 +675,12 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                     return AssertionError(print_text)
                 else:
                     print(print_text)
-                    return False
+                    return _latest_check_return
 
-        @robot_log_keyword
         def raising_part(err):
             raise err
 
+        @robot_log_keyword
         @wraps(running_part)
         def wrapper(*args, **kwargs):
             re_value = running_part(*args, **kwargs)
