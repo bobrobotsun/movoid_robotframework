@@ -8,7 +8,7 @@
 """
 import time
 
-from movoid_function import type as function_type
+from movoid_function import type as function_type, adapt_call
 from movoid_function import wraps, wraps_func, reset_function_default_value, analyse_args_value_from_function
 
 from .version import VERSION
@@ -78,14 +78,14 @@ if VERSION:
         from robot.running.outputcapture import OutputCapturer
 
 
-        def _robot_log_keyword(*return_is_fail):
+        def _robot_log_keyword(*return_is_fail, _force=False):
             if len(return_is_fail) == 1 and callable(return_is_fail[0]):
                 return _robot_log_keyword()(return_is_fail[0])
             else:
                 return_is_fail = list(return_is_fail)
 
             def dec(func):
-                if getattr(func, '_robot_log', None) is not None:
+                if not _force and getattr(func, '_robot_log', None) is not None:
                     return func
 
                 @wraps(func)
@@ -123,6 +123,8 @@ if VERSION:
                                 print(traceback.format_exc())
                                 if _return_when_error is not None:
                                     re_value = _return_when_error
+                                    if show_re_bool:
+                                        print(f'[error]{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
                                 else:
                                     temp_error = err
                             else:
@@ -166,14 +168,14 @@ if VERSION:
         from robot.running.outputcapture import OutputCapturer
 
 
-        def _robot_log_keyword(*return_is_fail):
+        def _robot_log_keyword(*return_is_fail, _force=False):
             if len(return_is_fail) == 1 and callable(return_is_fail[0]):
                 return _robot_log_keyword()(return_is_fail[0])
             else:
                 return_is_fail = list(return_is_fail)
 
             def dec(func):
-                if getattr(func, '_robot_log', None) is not None:
+                if not _force and getattr(func, '_robot_log', None) is not None:
                     return func
 
                 @wraps(func)
@@ -210,6 +212,8 @@ if VERSION:
                                 print(traceback.format_exc())
                                 if _return_when_error is not None:
                                     re_value = _return_when_error
+                                    if show_re_bool:
+                                        print(f'[error]{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
                                 else:
                                     temp_error = err
                             else:
@@ -249,12 +253,12 @@ if VERSION:
 
 
 else:
-    def _robot_log_keyword(*return_is_fail):
+    def _robot_log_keyword(*return_is_fail, _force=False):
         if len(return_is_fail) == 1 and callable(return_is_fail[0]):
             return _robot_log_keyword()(return_is_fail[0])
 
         def dec(func):
-            if getattr(func, '_robot_log', None) is not None:
+            if not _force and getattr(func, '_robot_log', None) is not None:
                 return func
 
             @wraps(func)
@@ -280,6 +284,8 @@ else:
                 except Exception as err:
                     if _return_when_error is not None:
                         re_value = _return_when_error
+                        if show_re_bool:
+                            print(f'[error]{func.__name__}: {pre_re_str}{re_value}({type(re_value).__name__}):is return value')
                     else:
                         temp_error = err
                 if temp_error is not None:
@@ -430,13 +436,15 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                     print(print_text)
                     return _latest_check_return
 
+        @robot_log_keyword
         def raising_part(err):
             raise err
 
-        @robot_log_keyword
+        @robot_log_keyword(_force=True)
         @wraps(running_part)
         def wrapper(*args, **kwargs):
-            re_value = running_part(*args, **kwargs)
+            kwargs['_simple_doc'] = True
+            re_value = adapt_call(running_part, args, kwargs)
             if isinstance(re_value, Exception):
                 raising_part(re_value)
             else:
@@ -554,13 +562,15 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                     print(print_text)
                     return _latest_check_return
 
+        @robot_log_keyword
         def raising_part(err):
             raise err
 
-        @robot_log_keyword
+        @robot_log_keyword(_force=True)
         @wraps(running_part)
         def wrapper(*args, **kwargs):
-            re_value = running_part(*args, **kwargs)
+            kwargs['_simple_doc'] = True
+            re_value = adapt_call(running_part, args, kwargs)
             if isinstance(re_value, Exception):
                 raising_part(re_value)
             else:
@@ -677,13 +687,15 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                     print(print_text)
                     return _latest_check_return
 
+        @robot_log_keyword
         def raising_part(err):
             raise err
 
-        @robot_log_keyword
+        @robot_log_keyword(_force=True)
         @wraps(running_part)
         def wrapper(*args, **kwargs):
-            re_value = running_part(*args, **kwargs)
+            kwargs['_simple_doc'] = True
+            re_value = adapt_call(running_part, args, kwargs)
             if isinstance(re_value, Exception):
                 raising_part(re_value)
             else:
