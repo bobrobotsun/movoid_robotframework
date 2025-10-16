@@ -357,10 +357,15 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                          do_interval=_do_interval,  # noqa
                          check_interval=_check_interval,  # noqa
                          error=_error):  # noqa
-            do_kwargs['_return_when_error'] = False
-            do_kwargs['_simple_doc'] = True
-            check_kwargs['_return_when_error'] = False
-            check_kwargs['_simple_doc'] = True
+            do_kwargs2 = check_kwargs2 = {
+                '_return_when_error': False,
+                '_simple_doc': True,
+                '_debug_default': 1,
+                '_debug_debug': 1,
+                '_force_raise': True,
+            }
+            do_kwargs.update(do_kwargs2)
+            check_kwargs.update(check_kwargs2)
             do_text = f'do {do_function.__name__}{do_kwargs}'
             print(f'do action:{do_text}')
             check_text = f'check {check_function.__name__}{check_kwargs}'
@@ -369,7 +374,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
             if init_check:
                 print_text = ''
                 try:
-                    check_bool = init_check_function(**check_kwargs)
+                    check_bool = adapt_call(init_check_function, ori_kwargs=check_kwargs)
                     _latest_check_return = check_bool
                     if check_bool:
                         print_text = f'pass init {check_text}.do_until_check end.'
@@ -390,7 +395,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                 loop_time += 1
                 print_text = ''
                 try:
-                    do_function(**do_kwargs)
+                    adapt_call(do_function, ori_kwargs=do_kwargs)
                     print_text = f'end do {time.time() - start_time_point:.3f} second {loop_time} time'
                 except Exception as err:
                     print_text = f'error do {time.time() - start_time_point:.3f} second {loop_time} time :{err}'
@@ -405,7 +410,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                     check_interval_time_point = time.time()
                     check_loop_time += 1
                     try:
-                        check_bool = check_function(**check_kwargs)
+                        check_bool = adapt_call(check_function, ori_kwargs=check_kwargs)
                         _latest_check_return = check_bool
                         time_now = time.time()
                         if check_bool:
@@ -443,7 +448,10 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
         @robot_log_keyword(_force=True)
         @wraps(running_part)
         def wrapper(*args, **kwargs):
-            kwargs['_simple_doc'] = True
+            kwargs2 = {
+                '_simple_doc': True,
+            }
+            kwargs.update(kwargs2)
             re_value = adapt_call(running_part, args, kwargs)
             if isinstance(re_value, Exception):
                 raising_part(re_value)
@@ -498,15 +506,21 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                          stable_time=_stable_time,  # noqa
                          check_interval=_check_interval,  # noqa
                          error=_error):  # noqa
-            check_kwargs['_return_when_error'] = False
-            check_kwargs['_simple_doc'] = True
+            check_kwargs2 = {
+                '_return_when_error': False,
+                '_simple_doc': True,
+                '_debug_default': 1,
+                '_debug_debug': 1,
+                '_force_raise': True,
+            }
+            check_kwargs.update(check_kwargs2)
             check_text = f'check {check_function.__name__}{check_kwargs}'
             print(f'check action:{check_text}')
             _latest_check_return = None
             if init_check:
                 print_text = ''
                 try:
-                    check_bool = init_check_function(**check_kwargs)
+                    check_bool = adapt_call(init_check_function, ori_kwargs=check_kwargs)
                     _latest_check_return = check_bool
                     if check_bool:
                         print_text = f'init {check_text} pass.'
@@ -527,7 +541,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                 loop_time += 1
                 print_text = ''
                 try:
-                    check_bool = check_function(**check_kwargs)
+                    check_bool = adapt_call(check_function, ori_kwargs=check_kwargs)
                     _latest_check_return = check_bool
                     if check_bool:
                         print_text = '{:.3f} second {} time {} pass.'.format(time.time() - start_time_point, loop_time, check_text)
@@ -620,10 +634,15 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                          wait_before_check=_wait_before_check,  # noqa
                          check_interval=_check_interval,  # noqa
                          error=_error):  # noqa
-            do_kwargs['_return_when_error'] = False
-            do_kwargs['_simple_doc'] = True
-            check_kwargs['_return_when_error'] = False
-            check_kwargs['_simple_doc'] = True
+            do_kwargs2 = check_kwargs2 = {
+                '_return_when_error': False,
+                '_simple_doc': True,
+                '_debug_default': 1,
+                '_debug_debug': 1,
+                '_force_raise': True,
+            }
+            do_kwargs.update(do_kwargs2)
+            check_kwargs.update(check_kwargs2)
             do_text = f'always true {do_function.__name__}{do_kwargs}'
             print(f'always true action:{do_text}')
             check_text = f'check {check_function.__name__}{check_kwargs}'
@@ -638,7 +657,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                 loop_time += 1
                 print_text = ''
                 try:
-                    do_bool = do_function(**do_kwargs)
+                    do_bool = adapt_call(do_function, ori_kwargs=do_kwargs)
                 except Exception as err:
                     print_text = f'error always true {time.time() - start_time_point:.3f} second {loop_time} time :{err}'
                     if error:
@@ -660,7 +679,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                         print(print_text)
                 time.sleep(wait_before_check)
                 try:
-                    check_bool = check_function(**check_kwargs)
+                    check_bool = adapt_call(check_function, ori_kwargs=check_kwargs)
                     _latest_check_return = check_bool
                     time_now = time.time()
                     if check_bool:

@@ -8,12 +8,14 @@
 """
 import math
 
+from movoid_debug import debug, no_debug
 from movoid_function import decorate_class_function_exclude
 
 from ..decorator import robot_log_keyword, robot_no_log_keyword
 from ..basic import Basic
 
 
+@decorate_class_function_exclude(debug)
 @decorate_class_function_exclude(robot_log_keyword)
 class ActionAssertion(Basic):
     assert_logic_arg = ('not', 'and', 'or')
@@ -22,6 +24,7 @@ class ActionAssertion(Basic):
     def __init__(self):
         super().__init__()
 
+    @no_debug
     @robot_no_log_keyword
     def _assert_text(self, error_text, *args, error_format=None):
         if isinstance(error_format, str):
@@ -31,6 +34,14 @@ class ActionAssertion(Basic):
         return error_text
 
     def assert_equal(self, var1, var2, var_type=None, error_text=None, error_format=None):
+        """
+        判断两个变量是否相等
+        :param var1: 第一个参数
+        :param var2: 第二个参数
+        :param var_type: 强制转换变量类型，默认不变类型
+        :param error_text: 错误时的error文字，否则直接打印公式
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        """
         error_text = self._assert_text(
             str(error_text) if error_text else f'{var1} == {var2}',
             var1, var2,
@@ -44,6 +55,14 @@ class ActionAssertion(Basic):
         assert real_var1 == real_var2, error_text
 
     def assert_not_equal(self, var1, var2, var_type=None, error_text=None, error_format=None):
+        """
+        判断两个变量是否不相等
+        :param var1: 第一个参数
+        :param var2: 第二个参数
+        :param var_type: 强制转换变量类型，默认不变类型
+        :param error_text: 错误时的error文字，否则直接打印公式
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        """
         error_text = self._assert_text(
             str(error_text) if error_text else f'{var1} == {var2}',
             var1, var2,
@@ -57,6 +76,14 @@ class ActionAssertion(Basic):
         assert real_var1 != real_var2, error_text
 
     def assert_equal_float(self, var1, var2, digit=3, error_text=None, error_format=None):
+        """
+        判断两个浮点数是否相等
+        :param var1: 第一个参数
+        :param var2: 第二个参数
+        :param digit: 最高小数点位数
+        :param error_text: 错误时的error文字，否则直接打印公式
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        """
         digit = int(digit)
         real_var1 = round(float(var1), digit)
         real_var2 = round(float(var2), digit)
@@ -68,6 +95,15 @@ class ActionAssertion(Basic):
         assert real_var1 == real_var2, error_text
 
     def assert_not_equal_float(self, var1, var2, digit=3, error_text=None, error_format=None):
+        """
+        判断两个浮点数是否不相等
+        :param var1: 第一个参数
+        :param var2: 第二个参数
+        :param digit: 最高小数点位数
+        :param error_text: 错误时的error文字，否则直接打印公式
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         digit = int(digit)
         real_var1 = round(float(var1), digit)
         real_var2 = round(float(var2), digit)
@@ -84,7 +120,7 @@ class ActionAssertion(Basic):
         :param args: 一个变量、一个符号的模式进行输入
         :param check_logic: all就是所有判定条件都要满足；其他就是只要一个判定条件满足即可
         :param error_text: 错误时的error文字，否则直接打印公式
-        :param error_text: 错误时的error文字，否则直接打印公式
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
         :raise AssertionError: 判定失败后raise
         """
         cal_list = [_ for _ in args]
@@ -170,7 +206,12 @@ class ActionAssertion(Basic):
             assert any(result_list), error_text
 
     def assert_true(self, var1, error_format=None):
-        """转bool后，是否为True"""
+        """
+        转bool后，是否为True
+        :param var1: 目标变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         error_text = self._assert_text(
             f'{var1} should be True',
             var1,
@@ -178,7 +219,12 @@ class ActionAssertion(Basic):
         assert bool(var1), error_text
 
     def assert_false(self, var1, error_format=None):
-        """转bool后，是否为True"""
+        """
+        转bool后，是否为False
+        :param var1: 目标变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         error_text = self._assert_text(
             f'{var1} should be False'
             , var1
@@ -186,7 +232,12 @@ class ActionAssertion(Basic):
         assert not bool(var1), error_text
 
     def assert_is_none(self, var1, error_format=None):
-        """判断是否是None"""
+        """
+        判断是否是None
+        :param var1: 目标变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         error_text = self._assert_text(
             f'{var1} should be None'
             , var1
@@ -194,7 +245,12 @@ class ActionAssertion(Basic):
         assert var1 is None, error_text
 
     def assert_is_not_none(self, var1, error_format=None):
-        """判断是否是None"""
+        """
+        判断是否不是None
+        :param var1: 目标变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         error_text = self._assert_text(
             f'{var1} should not be None'
             , var1
@@ -202,7 +258,12 @@ class ActionAssertion(Basic):
         assert var1 is not None, error_text
 
     def assert_is_true(self, var1, error_format=None):
-        """判断是否是True"""
+        """
+        判断是否是True
+        :param var1: 目标变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         error_text = self._assert_text(
             f'{var1} should True'
             , var1
@@ -210,7 +271,12 @@ class ActionAssertion(Basic):
         assert var1 is True, error_text
 
     def assert_is_not_true(self, var1, error_format=None):
-        """判断是否不是True"""
+        """
+        判断是否不是True
+        :param var1: 目标变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         error_text = self._assert_text(
             f'{var1} should not be True'
             , var1
@@ -218,7 +284,12 @@ class ActionAssertion(Basic):
         assert var1 is not True, error_text
 
     def assert_is_false(self, var1, error_format=None):
-        """判断是否是False"""
+        """
+        判断是否是False
+        :param var1: 目标变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         error_text = self._assert_text(
             f'{var1} should be False'
             , var1
@@ -226,7 +297,12 @@ class ActionAssertion(Basic):
         assert var1 is False, error_text
 
     def assert_is_not_false(self, var1, error_format=None):
-        """判断是否不是False"""
+        """
+        判断是否不是False
+        :param var1: 目标变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         error_text = self._assert_text(
             f'{var1} should not be False'
             , var1
@@ -234,7 +310,13 @@ class ActionAssertion(Basic):
         assert var1 is not False, error_text
 
     def assert_in(self, var1, var2, error_format=None):
-        """判断是否in"""
+        """
+        判断是否in
+        :param var1: 目标前变量
+        :param var2: 目标后变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         self.print(f'{var1} in {var2}')
         error_text = self._assert_text(
             f'{var1} should in {var2}'
@@ -243,7 +325,13 @@ class ActionAssertion(Basic):
         assert var1 in var2, error_text
 
     def assert_not_in(self, var1, var2, error_format=None):
-        """判断是否not in"""
+        """
+        判断是否not in
+        :param var1: 目标前变量
+        :param var2: 目标后变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         self.print(f'{var1} not in {var2}')
         error_text = self._assert_text(
             f'{var1} is None'
@@ -252,7 +340,13 @@ class ActionAssertion(Basic):
         assert var1 not in var2, error_text
 
     def assert_is(self, var1, var2, error_format=None):
-        """判断是否is"""
+        """
+        判断是否is
+        :param var1: 目标前变量
+        :param var2: 目标后变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         self.print(f'{var1} is {var2}')
         error_text = self._assert_text(
             f'{var1} is None'
@@ -261,7 +355,13 @@ class ActionAssertion(Basic):
         assert var1 is var2, error_text
 
     def assert_is_not(self, var1, var2, error_format=None):
-        """判断是否not is"""
+        """
+        判断是否is not
+        :param var1: 目标前变量
+        :param var2: 目标后变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         self.print(f'{var1} is not {var2}')
         error_text = self._assert_text(
             f'{var1} is None'
@@ -270,7 +370,13 @@ class ActionAssertion(Basic):
         assert var1 is not var2, error_text
 
     def assert_isinstance(self, var1, var2, error_format=None):
-        """判断是否isinstance"""
+        """
+        判断是否isinstance
+        :param var1: 目标前变量
+        :param var2: 目标后变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         self.print(f'isinstance({var1}, {var2})')
         error_text = self._assert_text(
             f'should isinstance({var1}, {var2})'
@@ -279,7 +385,13 @@ class ActionAssertion(Basic):
         assert isinstance(var1, var2), error_text
 
     def assert_not_isinstance(self, var1, var2, error_format=None):
-        """判断是否not isinstance"""
+        """
+        判断是否not isinstance
+        :param var1: 目标前变量
+        :param var2: 目标后变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         self.print(f'not isinstance({var1}, {var2})')
         error_text = self._assert_text(
             f'should not isinstance({var1}, {var2})'
@@ -288,7 +400,13 @@ class ActionAssertion(Basic):
         assert not isinstance(var1, var2), error_text
 
     def assert_issubclass(self, var1, var2, error_format=None):
-        """判断是否issubclass"""
+        """
+        判断是否issubclass
+        :param var1: 目标前变量
+        :param var2: 目标后变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         self.print(f'issubclass({var1}, {var2})')
         error_text = self._assert_text(
             f'should issubclass({var1}, {var2})'
@@ -297,7 +415,13 @@ class ActionAssertion(Basic):
         assert issubclass(var1, var2), error_text
 
     def assert_not_issubclass(self, var1, var2, error_format=None):
-        """判断是否not issubclass"""
+        """
+        判断是否not issubclass
+        :param var1: 目标前变量
+        :param var2: 目标后变量
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
+        :return:
+        """
         self.print(f'not issubclass({var1}, {var2})')
         error_text = self._assert_text(
             f'should not issubclass({var1}, {var2})'
@@ -305,7 +429,12 @@ class ActionAssertion(Basic):
             , error_format=error_format)
         assert not issubclass(var1, var2), error_text
 
-    def analyse_logic(self, *args):
+    def _analyse_logic(self, *args):
+        """
+        解析logic的逻辑
+        :param args: 输入参数
+        :return:
+        """
         if len(args) == 3:
             if args[1] in self.assert_operate_arg:
                 operate = args[1]
@@ -348,6 +477,7 @@ class ActionAssertion(Basic):
         使用逻辑not、and、or和判断符号，进行bool值的判断
         :param args: 所有的变量、计算符号、逻辑符号
         :param error_text: 错误文本，如果不填，判断失败时，会显示原始公式
+        :param error_format: 错误时的error文字，可以使用{0}来代替输入的参数
         """
         error_text = str(error_text) if error_text else ' '.join([str(_) for _ in args])
         error_text = self._assert_text(
@@ -370,7 +500,7 @@ class ActionAssertion(Basic):
         self.print(f'{logic_list} :combine all value and operator to')
         for i, v in enumerate(logic_list):
             if isinstance(v, list):
-                logic_list[i] = self.analyse_logic(*v)
+                logic_list[i] = self._analyse_logic(*v)
         self.print(f'{logic_list} :calculate all operator')
         i = 0
         while i < len(logic_list):

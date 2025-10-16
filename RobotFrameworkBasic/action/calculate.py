@@ -9,12 +9,14 @@
 import math
 import random
 
+from movoid_debug import debug
 from movoid_function import decorate_class_function_exclude
 
 from ..decorator import robot_log_keyword
 from ..basic import Basic
 
 
+@decorate_class_function_exclude(debug)
 @decorate_class_function_exclude(robot_log_keyword)
 class ActionCalculate(Basic):
     def __init__(self):
