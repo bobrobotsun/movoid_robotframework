@@ -8,6 +8,7 @@
 """
 import pathlib
 import sys
+from movoid_function import STACK
 
 run_file = pathlib.Path(sys.argv[0])
 if run_file.stem == 'robot' and run_file.parent.name.lower() == 'scripts':
@@ -19,6 +20,7 @@ else:
 if run == 'robot':
     import robot
 
+    STACK.module_should_ignore(robot)
     robot_version = robot.__version__.split('.')
     if robot_version[0] in ('6', '7'):
         version = robot_version[0]

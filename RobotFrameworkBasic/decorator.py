@@ -8,7 +8,7 @@
 """
 import time
 
-from movoid_function import type as function_type, adapt_call
+from movoid_function import type as function_type, adapt_call, STACK
 from movoid_function import wraps, wraps_func, reset_function_default_value, analyse_args_value_from_function
 
 from .version import VERSION
@@ -120,16 +120,16 @@ if VERSION:
                                 re_value = func(*args, **kwargs)
                             except Exception as err:
                                 result.status = 'FAIL'
-                                print(traceback.format_exc())
+                                print(traceback.format_exc(), stacklevel=1)  # noqa
                                 if _return_when_error is not None:
                                     re_value = _return_when_error
                                     if show_re_bool:
-                                        print(f'[error]{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
+                                        print(f'[error]{pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                                 else:
                                     temp_error = err
                             else:
                                 if show_re_bool:
-                                    print(f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
+                                    print(f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                                 if re_value in return_is_fail:
                                     result.status = 'FAIL'
                                 else:
@@ -137,18 +137,18 @@ if VERSION:
                         result.endtime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
                         LOGGER.end_keyword(combine)
                     else:
-                        print(func.__name__, *arg_print_list)
+                        print(func.__name__, *arg_print_list, stacklevel=1)  # noqa
                         try:
                             re_value = func(*args, **kwargs)
                         except Exception as err:
-                            print(traceback.format_exc())
+                            print(traceback.format_exc(), stacklevel=1)  # noqa
                             if _return_when_error is not None:
                                 re_value = _return_when_error
                             else:
                                 temp_error = err
                         else:
                             if show_re_bool:
-                                print(func.__name__, f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
+                                print(func.__name__, f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                     if temp_error is not None:
                         raise temp_error
                     else:
@@ -209,16 +209,16 @@ if VERSION:
                                 re_value = func(*args, **kwargs)
                             except Exception as err:
                                 result.status = 'FAIL'
-                                print(traceback.format_exc())
+                                print(traceback.format_exc(), stacklevel=1)  # noqa
                                 if _return_when_error is not None:
                                     re_value = _return_when_error
                                     if show_re_bool:
-                                        print(f'[error]{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
+                                        print(f'[error]{pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                                 else:
                                     temp_error = err
                             else:
                                 if show_re_bool:
-                                    print(f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
+                                    print(f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                                 if re_value in return_is_fail:
                                     result.status = 'FAIL'
                                 else:
@@ -226,18 +226,18 @@ if VERSION:
                         result.end_time = datetime.datetime.now()
                         LOGGER.end_keyword(data, result)
                     else:
-                        print(func.__name__, *arg_print_list)
+                        print(func.__name__, *arg_print_list, stacklevel=1)  # noqa
                         try:
                             re_value = func(*args, **kwargs)
                         except Exception as err:
-                            print(traceback.format_exc())
+                            print(traceback.format_exc(), stacklevel=1)  # noqa
                             if _return_when_error is not None:
                                 re_value = _return_when_error
                             else:
                                 temp_error = err
                         else:
                             if show_re_bool:
-                                print(func.__name__, f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value')
+                                print(func.__name__, f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                     if temp_error is not None:
                         raise temp_error
                     else:
@@ -269,7 +269,7 @@ else:
                 arg_print_list = _analyse_arg_dict_to_arg_list(
                     arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure,
                     _return_name=_return_name, _show_return_info=_show_return_info, _simple_doc=_simple_doc)
-                print(func.__name__, *arg_print_list)
+                print(func.__name__, *arg_print_list, stacklevel=1)  # noqa
                 re_value = None
                 temp_error = None
                 if '_show_return_info' in arg_dict['arg']:
@@ -285,14 +285,14 @@ else:
                     if _return_when_error is not None:
                         re_value = _return_when_error
                         if show_re_bool:
-                            print(f'[error]{func.__name__}: {pre_re_str}{re_value}({type(re_value).__name__}):is return value')
+                            print(f'[error]{func.__name__}: {pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                     else:
                         temp_error = err
                 if temp_error is not None:
                     raise temp_error
                 else:
                     if show_re_bool:
-                        print(f'{func.__name__}: {pre_re_str}{re_value}({type(re_value).__name__}):is return value')
+                        print(f'{func.__name__}: {pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                     return re_value
 
             wrapper.__doc__ = _add_doc(wrapper, COMMON_DOC)
@@ -367,9 +367,9 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
             do_kwargs.update(do_kwargs2)
             check_kwargs.update(check_kwargs2)
             do_text = f'do {do_function.__name__}{do_kwargs}'
-            print(f'do action:{do_text}')
+            print(f'do action:{do_text}', stacklevel=1)  # noqa
             check_text = f'check {check_function.__name__}{check_kwargs}'
-            print(f'check action:{check_text}')
+            print(f'check action:{check_text}', stacklevel=1)  # noqa
             _latest_check_return = None
             if init_check:
                 print_text = ''
@@ -385,7 +385,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                     print_text = f'error init {check_text}:{err}'
                 finally:
                     if not getattr(init_check_function, '_robot_log', False):
-                        print(print_text)
+                        print(print_text, stacklevel=1)  # noqa
             time.sleep(init_sleep)
             total_time = 0
             start_time_point = time.time()
@@ -401,7 +401,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                     print_text = f'error do {time.time() - start_time_point:.3f} second {loop_time} time :{err}'
                 finally:
                     if not getattr(do_function, '_robot_log', False):
-                        print(print_text)
+                        print(print_text, stacklevel=1)  # noqa
                 time.sleep(wait_before_check)
                 check_time = 0
                 check_time_point = time.time()
@@ -423,7 +423,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                         print_text = f'error check {time_now - start_time_point:.3f}/{time_now - check_time_point:.3f} second {loop_time}-{check_loop_time} time:{err}'
                     finally:
                         if not getattr(check_function, '_robot_log', False):
-                            print(print_text)
+                            print(print_text, stacklevel=1)  # noqa
                     check_interval_time = time.time() - check_interval_time_point
                     if check_interval_time < check_interval:
                         time.sleep(check_interval - check_interval_time)
@@ -438,7 +438,7 @@ def do_until_check(do_function, check_function, timeout=30, init_check=True, ini
                 if error:
                     return AssertionError(print_text)
                 else:
-                    print(print_text)
+                    print(print_text, stacklevel=1)  # noqa
                     return _latest_check_return
 
         @robot_log_keyword
@@ -515,7 +515,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
             }
             check_kwargs.update(check_kwargs2)
             check_text = f'check {check_function.__name__}{check_kwargs}'
-            print(f'check action:{check_text}')
+            print(f'check action:{check_text}', stacklevel=1)  # noqa
             _latest_check_return = None
             if init_check:
                 print_text = ''
@@ -530,7 +530,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                     print_text = f'init {check_text} error:{err}'
                 finally:
                     if not getattr(check_function, '_robot_log', False):
-                        print(print_text)
+                        print(print_text, stacklevel=1)  # noqa
             time.sleep(init_sleep)
             total_time = 0
             start_time_point = time.time()
@@ -556,13 +556,13 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                     else:
                         print_text = '{:.3f} second {} time {} fail.'.format(time.time() - start_time_point, loop_time, check_text)
                         pass_time = 0
-                        print(print_text)
+                        print(print_text, stacklevel=1)  # noqa
                 except Exception as err:
                     print_text = '{:.3f} second {} time {} error:{}'.format(time.time() - start_time_point, loop_time, check_text, err)
                     pass_time = 0
                 finally:
                     if not getattr(check_function, '_robot_log', False):
-                        print(print_text)
+                        print(print_text, stacklevel=1)  # noqa
                 total_interval_time = time.time() - total_interval_time_point
                 if total_interval_time < check_interval:
                     time.sleep(check_interval - total_interval_time)
@@ -573,7 +573,7 @@ def wait_until_stable(check_function, timeout=30, init_check=True, init_check_fu
                 if error:
                     return AssertionError(print_text)
                 else:
-                    print(print_text)
+                    print(print_text, stacklevel=1)  # noqa
                     return _latest_check_return
 
         @robot_log_keyword
@@ -644,9 +644,9 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
             do_kwargs.update(do_kwargs2)
             check_kwargs.update(check_kwargs2)
             do_text = f'always true {do_function.__name__}{do_kwargs}'
-            print(f'always true action:{do_text}')
+            print(f'always true action:{do_text}', stacklevel=1)  # noqa
             check_text = f'check {check_function.__name__}{check_kwargs}'
-            print(f'check action:{check_text}')
+            print(f'check action:{check_text}', stacklevel=1)  # noqa
             time.sleep(init_sleep)
             total_time = 0
             start_time_point = time.time()
@@ -676,7 +676,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                             return _latest_check_return
                 finally:
                     if not getattr(do_function, '_robot_log', False):
-                        print(print_text)
+                        print(print_text, stacklevel=1)  # noqa
                 time.sleep(wait_before_check)
                 try:
                     check_bool = adapt_call(check_function, ori_kwargs=check_kwargs)
@@ -692,7 +692,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                     print_text = f'error check {time_now - start_time_point:.3f} second {loop_time} time:{err}'
                 finally:
                     if not getattr(check_function, '_robot_log', False):
-                        print(print_text)
+                        print(print_text, stacklevel=1)  # noqa
                 total_interval_time = time.time() - total_interval_time_point
                 if total_interval_time < check_interval:
                     time.sleep(check_interval - total_interval_time)
@@ -703,7 +703,7 @@ def always_true_until_check(do_function, check_function, timeout=30, init_sleep=
                 if error:
                     return AssertionError(print_text)
                 else:
-                    print(print_text)
+                    print(print_text, stacklevel=1)  # noqa
                     return _latest_check_return
 
         @robot_log_keyword
@@ -803,3 +803,13 @@ function_type.default_type = {
 @reset_function_default_value(function_type.check_parameters_type)
 def check_parameters_type(convert=True, check_arguments=True, check_return=True):  # noqa
     pass
+
+
+STACK.this_file_lineno_should_ignore(120, check_text="re_value = func(*args, **kwargs)")
+STACK.this_file_lineno_should_ignore(142, check_text="re_value = func(*args, **kwargs)")
+STACK.this_file_lineno_should_ignore(209, check_text="re_value = func(*args, **kwargs)")
+STACK.this_file_lineno_should_ignore(231, check_text="re_value = func(*args, **kwargs)")
+STACK.this_file_lineno_should_ignore(283, check_text="re_value = func(*args, **kwargs)")
+STACK.this_file_lineno_should_ignore(734, check_text="re_value = func(**kwargs)")
+
+STACK.this_file_lineno_should_ignore(736, check_text="error_function(**error_kwargs)")

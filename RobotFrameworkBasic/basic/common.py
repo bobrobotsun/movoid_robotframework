@@ -14,11 +14,12 @@ import traceback
 from typing import Union
 
 from movoid_config import Config
-from movoid_function import replace_function, decorate_class_function_exclude
+from movoid_function import replace_function, decorate_class_function_exclude, STACK, stack
+from movoid_log import LogLevel
 
 from robot.libraries.BuiltIn import BuiltIn
 
-from ..decorator import robot_no_log_keyword, robot_log_keyword
+from ..decorator import robot_no_log_keyword, robot_log_keyword, _str_at_most_length
 from ..error import RfError
 from ..version import VERSION
 
@@ -37,8 +38,7 @@ class BasicCommon:
         self._robot_config = Config()
         self.robot_config_init()
         self._no_error_when_exception = 0
-        if VERSION:
-            self.replace_builtin_print()
+        self.replace_builtin_print()
 
     if VERSION:
         print_function = {
@@ -49,16 +49,23 @@ class BasicCommon:
         }
 
         @robot_no_log_keyword
-        def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True, log=False):
-            if log:
-                self.log(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush)
+        def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True, log=False, stacklevel=None, stack_info_level=None):
+            stack_level = (0 if stacklevel is None else int(stacklevel)) + 1
+            stack_info_level = self._robot_config['stack_info_level'] if stack_info_level is None else int(stack_info_level)
+            if stack_info_level:
+                stack_frame = STACK.get_frame(stack_level)
+                stack_str = f'[{stack_frame.info(stack_info_level)}] '
             else:
-                level = str(level).upper()
-                also_console = self._robot_config.print_console if also_console is None else bool(also_console)
-                print_text = str(sep).join([str(_) for _ in args])
+                stack_str = ''
+            if log:
+                self.log(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush, stacklevel=stack_level, stack_info_level=stack_info_level)
+            else:
+                level = LogLevel(level)
+                also_console = self._robot_config.console_print if also_console is None else bool(also_console)
+                print_text = stack_str + str(sep).join([str(_) for _ in args])
                 print_text_end = print_text + str(end)
                 if file is None:
-                    logger.write(print_text, level=level, html=html)
+                    logger.write(print_text, level=level.str, html=html)
                 elif file == sys.stdout:
                     logger.write(print_text, html=html)
                 elif file == sys.stderr:
@@ -68,13 +75,14 @@ class BasicCommon:
                     if flush:
                         file.flush()
                 if also_console:
-                    if level in ('WARN', 'ERROR'):
-                        # stream = sys.__stderr__
-                        pass
-                    else:
-                        stream = sys.__stdout__
-                        stream.write(print_text_end)
-                        stream.flush()
+                    if level >= self._robot_config.console_level:
+                        if level >= LogLevel('WARN'):
+                            # stream = sys.__stderr__
+                            pass
+                        else:
+                            stream = sys.__stdout__
+                            stream.write(print_text_end)
+                            stream.flush()
 
         def get_robot_variable(self, variable_name: str, default=None):
             return self.built.get_variable_value("${" + variable_name + "}", default)
@@ -111,14 +119,27 @@ class BasicCommon:
             return join_str.join(sc_list)
     else:
         @robot_no_log_keyword
-        def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True, log=False):  # noqa
-            if log:
-                self.log(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush)
+        def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True, log=False, stacklevel=None, stack_info_level=None):  # noqa
+            stack_level = (0 if stacklevel is None else int(stacklevel)) + 1
+            stack_info_level = self._robot_config['stack_info_level'] if stack_info_level is None else int(stack_info_level)
+            if stack_info_level:
+                stack_frame = STACK.get_frame(stack_level)
+                stack_str = f'[{stack_frame.info(stack_info_level)}] '
             else:
-                level = str(level).upper()
-                if file is None and level == 'ERROR':
-                    file = sys.__stderr__
-                print(*args, sep=sep, end=end, file=file, flush=flush)
+                stack_str = ''
+            if log:
+                self.log(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush, stacklevel=stack_level, stack_info_level=stack_info_level)
+            else:
+                level = LogLevel(level)
+                if level >= self._robot_config.console_level:
+                    if file is None and level > LogLevel('ERROR'):
+                        file = sys.stderr
+                    else:
+                        file = sys.stdout
+                    print_str = stack_str + sep.join([str(_) for _ in args]) + end
+                    file.write(print_str)
+                    if flush:
+                        file.flush()
 
         def get_robot_variable(self, variable_name: str, default=None):
             return self._robot_variable.get(variable_name, default)
@@ -139,24 +160,29 @@ class BasicCommon:
         replace_function(print, self.print)
 
     @robot_log_keyword
-    def log(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True):
-        self.print(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush, log=False)
+    def log(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True, stacklevel=None, stack_info_level=None):
+        stacklevel = 0 if stacklevel is None else int(stacklevel)
+        self.print(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush, log=False, stacklevel=stacklevel + 1, stack_info_level=stack_info_level)
 
     @robot_no_log_keyword
-    def debug(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True, log=False):
-        self.print(*args, html=html, also_console=also_console, level='DEBUG', sep=sep, end=end, file=file, flush=flush, log=log)
+    def debug(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True, log=False, stacklevel=None, stack_info_level=None):
+        stacklevel = 0 if stacklevel is None else int(stacklevel)
+        self.print(*args, html=html, also_console=also_console, level='DEBUG', sep=sep, end=end, file=file, flush=flush, log=log, stacklevel=stacklevel + 1, stack_info_level=stack_info_level)
 
     @robot_no_log_keyword
-    def info(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True, log=False):
-        self.print(*args, html=html, also_console=also_console, level='INFO', sep=sep, end=end, file=file, flush=flush, log=log)
+    def info(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True, log=False, stacklevel=None, stack_info_level=None):
+        stacklevel = 0 if stacklevel is None else int(stacklevel)
+        self.print(*args, html=html, also_console=also_console, level='INFO', sep=sep, end=end, file=file, flush=flush, log=log, stacklevel=stacklevel + 1, stack_info_level=stack_info_level)
 
     @robot_no_log_keyword
-    def warn(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True, log=False):
-        self.print(*args, html=html, also_console=also_console, level='WARN', sep=sep, end=end, file=file, flush=flush, log=log)
+    def warn(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True, log=False, stacklevel=None, stack_info_level=None):
+        stacklevel = 0 if stacklevel is None else int(stacklevel)
+        self.print(*args, html=html, also_console=also_console, level='WARN', sep=sep, end=end, file=file, flush=flush, log=log, stacklevel=stacklevel + 1, stack_info_level=stack_info_level)
 
     @robot_no_log_keyword
-    def error(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True, log=False):
-        self.print(*args, html=html, also_console=also_console, level='ERROR', sep=sep, end=end, file=file, flush=flush, log=log)
+    def error(self, *args, html=False, also_console=None, sep=' ', end='\n', file=None, flush=True, log=False, stacklevel=None, stack_info_level=None):
+        stacklevel = 0 if stacklevel is None else int(stacklevel)
+        self.print(*args, html=html, also_console=also_console, level='ERROR', sep=sep, end=end, file=file, flush=flush, log=log, stacklevel=stacklevel + 1, stack_info_level=stack_info_level)
 
     def analyse_json(self, value):
         """
@@ -318,7 +344,10 @@ class BasicCommon:
 
     @robot_no_log_keyword
     def robot_config_init(self):
-        self._robot_config.add_rule('print_console', 'bool', default=False)
+        self._robot_config.add_rule('console_print', 'bool', ini=['console', 'print'], default=False)
+        self._robot_config.add_rule('console_level', 'int', ini=['console', 'level'], default=21)
+        self._robot_config.add_rule('log_level', 'int', ini=['log', 'level'], default=20)
+        self._robot_config.add_rule('stack_info_level', 'int', ini=['log', 'stack_info_level'], default=stack.ModuleFunction)
         self._robot_config.init(None, 'movoid_robotframework.ini', False)
 
     @robot_no_log_keyword
@@ -361,7 +390,7 @@ class BasicCommon:
                     error_text = f', it only has keys:{list(temp.keys())}'
                 else:
                     error_text = ''
-                raise KeyError(f'{temp} has not key {key}{error_text}')
+                raise KeyError(f'{_str_at_most_length(temp)} has not key {key}{error_text}')
             else:
                 if isinstance(key, str):
                     temp_print += f'["{key}"]'
@@ -388,7 +417,7 @@ class BasicCommon:
                 self.print(f'{temp_print}:{type(temp).__name__} = {temp}')
             else:
                 error_text = f', it only has attribute:{dir(temp)}'
-                raise AttributeError(f'{temp} has not key {attr}{error_text}')
+                raise AttributeError(f'{_str_at_most_length(temp)} has not key {attr}{error_text}')
         return temp
 
     def sys_keyword_try(self):
