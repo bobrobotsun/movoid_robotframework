@@ -27,6 +27,38 @@ from ..version import VERSION
 if VERSION:
     from robot.api import logger
 
+RobotConfig = Config()
+
+RobotConfig.add_rule('console_print', 'bool', ini=['console', 'print'], default=False)
+RobotConfig.add_rule('console_level', 'int', ini=['console', 'level'], default=21)
+RobotConfig.add_rule('log_level', 'int', ini=['log', 'level'], default=20)
+RobotConfig.add_rule('stack_info_level', 'int', ini=['log', 'stack_info_level'], default=stack.ModuleFunction)
+RobotConfig.init(None, 'movoid_robotframework.ini', False)
+
+
+def temp_print(*args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True, log=False, stacklevel=None, stack_info_level=None):
+    stack_level = (0 if stacklevel is None else int(stacklevel)) + 1
+    stack_info_level = RobotConfig['stack_info_level'] if stack_info_level is None else int(stack_info_level)
+    if stack_info_level:
+        stack_frame = STACK.get_frame(stack_level)
+        stack_str = f'[{stack_frame.info(stack_info_level)}] '
+    else:
+        stack_str = ''
+    level = LogLevel(level)
+    if level >= RobotConfig.console_level:
+        if file is None:
+            if level >= LogLevel('ERROR'):
+                file = sys.stderr
+            else:
+                file = sys.stdout
+        print_str = stack_str + sep.join([str(_) for _ in args]) + end
+        file.write(print_str)
+        if flush:
+            file.flush()
+
+
+replace_function(print, temp_print)
+
 
 @decorate_class_function_include(debug, 'var_.*')
 @decorate_class_function_exclude(robot_log_keyword)
@@ -37,8 +69,6 @@ class BasicCommon:
         self.warn_list = []
         self.output_dir = getattr(self, 'output_dir', None)
         self._robot_variable = {}
-        self._robot_config = Config()
-        self.robot_config_init()
         self._no_error_when_exception = 0
         self.replace_builtin_print()
 
@@ -53,38 +83,35 @@ class BasicCommon:
         @robot_no_log_keyword
         def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True, log=False, stacklevel=None, stack_info_level=None):
             stack_level = (0 if stacklevel is None else int(stacklevel)) + 1
-            stack_info_level = self._robot_config['stack_info_level'] if stack_info_level is None else int(stack_info_level)
+            stack_info_level = RobotConfig['stack_info_level'] if stack_info_level is None else int(stack_info_level)
             if stack_info_level:
                 stack_frame = STACK.get_frame(stack_level)
                 stack_str = f'[{stack_frame.info(stack_info_level)}] '
             else:
                 stack_str = ''
-            if log:
-                self.log(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush, stacklevel=stack_level, stack_info_level=stack_info_level)
+            level = LogLevel(level)
+            also_console = RobotConfig.console_print if also_console is None else bool(also_console)
+            print_text = stack_str + str(sep).join([str(_) for _ in args])
+            print_text_end = print_text + str(end)
+            if file is None:
+                logger.write(print_text, level=level.str, html=html)
+            elif file == sys.stdout:
+                logger.write(print_text, html=html)
+            elif file == sys.stderr:
+                logger.error(print_text, html=html)
             else:
-                level = LogLevel(level)
-                also_console = self._robot_config.console_print if also_console is None else bool(also_console)
-                print_text = stack_str + str(sep).join([str(_) for _ in args])
-                print_text_end = print_text + str(end)
-                if file is None:
-                    logger.write(print_text, level=level.str, html=html)
-                elif file == sys.stdout:
-                    logger.write(print_text, html=html)
-                elif file == sys.stderr:
-                    logger.error(print_text, html=html)
-                else:
-                    file.write(print_text_end)
-                    if flush:
-                        file.flush()
-                if also_console:
-                    if level >= self._robot_config.console_level:
-                        if level >= LogLevel('WARN'):
-                            # stream = sys.__stderr__
-                            pass
-                        else:
-                            stream = sys.__stdout__
-                            stream.write(print_text_end)
-                            stream.flush()
+                file.write(print_text_end)
+                if flush:
+                    file.flush()
+            if also_console:
+                if level >= RobotConfig.console_level:
+                    if level >= LogLevel('WARN'):
+                        # stream = sys.__stderr__
+                        pass
+                    else:
+                        stream = sys.__stdout__
+                        stream.write(print_text_end)
+                        stream.flush()
 
         def get_robot_variable(self, variable_name: str, default=None):
             return self.built.get_variable_value("${" + variable_name + "}", default)
@@ -123,25 +150,7 @@ class BasicCommon:
         @robot_no_log_keyword
         def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True, log=False, stacklevel=None, stack_info_level=None):  # noqa
             stack_level = (0 if stacklevel is None else int(stacklevel)) + 1
-            stack_info_level = self._robot_config['stack_info_level'] if stack_info_level is None else int(stack_info_level)
-            if stack_info_level:
-                stack_frame = STACK.get_frame(stack_level)
-                stack_str = f'[{stack_frame.info(stack_info_level)}] '
-            else:
-                stack_str = ''
-            if log:
-                self.log(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush, stacklevel=stack_level, stack_info_level=stack_info_level)
-            else:
-                level = LogLevel(level)
-                if level >= self._robot_config.console_level:
-                    if file is None and level > LogLevel('ERROR'):
-                        file = sys.stderr
-                    else:
-                        file = sys.stdout
-                    print_str = stack_str + sep.join([str(_) for _ in args]) + end
-                    file.write(print_str)
-                    if flush:
-                        file.flush()
+            temp_print(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush, log=log, stacklevel=stack_level, stack_info_level=stack_info_level)
 
         def get_robot_variable(self, variable_name: str, default=None):
             return self._robot_variable.get(variable_name, default)
@@ -343,14 +352,6 @@ class BasicCommon:
                 print(f'we use default value:<{default}>({type(default).__name__})')
                 re_value = default
         return re_value
-
-    @robot_no_log_keyword
-    def robot_config_init(self):
-        self._robot_config.add_rule('console_print', 'bool', ini=['console', 'print'], default=False)
-        self._robot_config.add_rule('console_level', 'int', ini=['console', 'level'], default=21)
-        self._robot_config.add_rule('log_level', 'int', ini=['log', 'level'], default=20)
-        self._robot_config.add_rule('stack_info_level', 'int', ini=['log', 'stack_info_level'], default=stack.ModuleFunction)
-        self._robot_config.init(None, 'movoid_robotframework.ini', False)
 
     @robot_no_log_keyword
     def debug_teardown(self, function, args, kwargs, re_value, error, trace_back, has_return):
