@@ -14,7 +14,8 @@ import traceback
 from typing import Union
 
 from movoid_config import Config
-from movoid_function import replace_function, decorate_class_function_exclude, STACK, stack
+from movoid_debug import debug
+from movoid_function import replace_function, decorate_class_function_exclude, STACK, stack, decorate_class_function_include
 from movoid_log import LogLevel
 
 from robot.libraries.BuiltIn import BuiltIn
@@ -27,6 +28,7 @@ if VERSION:
     from robot.api import logger
 
 
+@decorate_class_function_include(debug, 'var_.*')
 @decorate_class_function_exclude(robot_log_keyword)
 class BasicCommon:
     def __init__(self):
