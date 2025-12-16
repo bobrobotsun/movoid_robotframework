@@ -813,3 +813,18 @@ STACK.this_file_lineno_should_ignore(283, check_text="re_value = func(*args, **k
 STACK.this_file_lineno_should_ignore(734, check_text="re_value = func(**kwargs)")
 
 STACK.this_file_lineno_should_ignore(736, check_text="error_function(**error_kwargs)")
+
+STACK.this_file_lineno_should_ignore(377, check_text="check_bool = adapt_call(init_check_function, ori_kwargs=check_kwargs)")
+STACK.this_file_lineno_should_ignore(398, check_text="adapt_call(do_function, ori_kwargs=do_kwargs)")
+STACK.this_file_lineno_should_ignore(413, check_text="check_bool = adapt_call(check_function, ori_kwargs=check_kwargs)")
+STACK.this_file_lineno_should_ignore(455, check_text="re_value = adapt_call(running_part, args, kwargs)")
+STACK.this_file_lineno_should_ignore(523, check_text="check_bool = adapt_call(init_check_function, ori_kwargs=check_kwargs)")
+STACK.this_file_lineno_should_ignore(544, check_text="check_bool = adapt_call(check_function, ori_kwargs=check_kwargs)")
+STACK.this_file_lineno_should_ignore(587, check_text="re_value = adapt_call(running_part, args, kwargs)")
+STACK.this_file_lineno_should_ignore(660, check_text="do_bool = adapt_call(do_function, ori_kwargs=do_kwargs)")
+STACK.this_file_lineno_should_ignore(682, check_text="check_bool = adapt_call(check_function, ori_kwargs=check_kwargs)")
+STACK.this_file_lineno_should_ignore(717, check_text="re_value = adapt_call(running_part, args, kwargs)")
+
+STACK.this_file_lineno_should_ignore(457, check_text="raising_part(re_value)")
+STACK.this_file_lineno_should_ignore(589, check_text="raising_part(re_value)")
+STACK.this_file_lineno_should_ignore(719, check_text="raising_part(re_value)")

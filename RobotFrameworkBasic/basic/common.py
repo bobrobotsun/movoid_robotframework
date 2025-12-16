@@ -32,19 +32,32 @@ RobotConfig = Config()
 RobotConfig.add_rule('console_print', 'bool', ini=['console', 'print'], default=False)
 RobotConfig.add_rule('console_level', 'int', ini=['console', 'level'], default=21)
 RobotConfig.add_rule('log_level', 'int', ini=['log', 'level'], default=20)
-RobotConfig.add_rule('stack_info_level', 'int', ini=['log', 'stack_info_level'], default=stack.ModuleFunction)
+RobotConfig.add_rule('stack_info_level', 'int', ini=['log', 'stack_info_level'], default=stack.NoInfo)
+RobotConfig.add_rule('high_log_level', 'int', ini=['log', 'high_level'], default=30)
+RobotConfig.add_rule('high_stack_info_level', 'int', ini=['log', 'high_stack_info_level'], default=stack.ModuleFunction)
 RobotConfig.init(None, 'movoid_robotframework.ini', False)
 
 
-def temp_print(*args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True, log=False, stacklevel=None, stack_info_level=None):
+def get_stack_info_level(level, default_stack_info_level):
+    if default_stack_info_level is None:
+        if level >= RobotConfig['high_log_level']:
+            stack_info_level = RobotConfig['high_stack_info_level']
+        else:
+            stack_info_level = RobotConfig['stack_info_level']
+    else:
+        stack_info_level = default_stack_info_level
+    return stack_info_level
+
+
+def common_print(*args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True, log=False, stacklevel=None, stack_info_level=None):
     stack_level = (0 if stacklevel is None else int(stacklevel)) + 1
-    stack_info_level = RobotConfig['stack_info_level'] if stack_info_level is None else int(stack_info_level)
+    level = LogLevel(level)
+    stack_info_level = get_stack_info_level(level, stack_info_level)
     if stack_info_level:
         stack_frame = STACK.get_frame(stack_level)
         stack_str = f'[{stack_frame.info(stack_info_level)}] '
     else:
         stack_str = ''
-    level = LogLevel(level)
     if level >= RobotConfig.console_level:
         if file is None:
             if level >= LogLevel('ERROR'):
@@ -57,7 +70,7 @@ def temp_print(*args, html=False, also_console=None, level='INFO', sep=' ', end=
             file.flush()
 
 
-replace_function(print, temp_print)
+replace_function(print, common_print)
 
 
 @decorate_class_function_include(debug, 'var_.*')
@@ -83,13 +96,13 @@ class BasicCommon:
         @robot_no_log_keyword
         def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True, log=False, stacklevel=None, stack_info_level=None):
             stack_level = (0 if stacklevel is None else int(stacklevel)) + 1
-            stack_info_level = RobotConfig['stack_info_level'] if stack_info_level is None else int(stack_info_level)
+            level = LogLevel(level)
+            stack_info_level = get_stack_info_level(level, stack_info_level)
             if stack_info_level:
                 stack_frame = STACK.get_frame(stack_level)
                 stack_str = f'[{stack_frame.info(stack_info_level)}] '
             else:
                 stack_str = ''
-            level = LogLevel(level)
             also_console = RobotConfig.console_print if also_console is None else bool(also_console)
             print_text = stack_str + str(sep).join([str(_) for _ in args])
             print_text_end = print_text + str(end)
@@ -150,7 +163,7 @@ class BasicCommon:
         @robot_no_log_keyword
         def print(self, *args, html=False, also_console=None, level='INFO', sep=' ', end='\n', file=None, flush=True, log=False, stacklevel=None, stack_info_level=None):  # noqa
             stack_level = (0 if stacklevel is None else int(stacklevel)) + 1
-            temp_print(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush, log=log, stacklevel=stack_level, stack_info_level=stack_info_level)
+            common_print(*args, html=html, also_console=also_console, level=level, sep=sep, end=end, file=file, flush=flush, log=log, stacklevel=stack_level, stack_info_level=stack_info_level)
 
         def get_robot_variable(self, variable_name: str, default=None):
             return self._robot_variable.get(variable_name, default)
