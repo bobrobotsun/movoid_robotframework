@@ -14,7 +14,7 @@ import traceback
 from typing import Union
 
 from movoid_config import Config
-from movoid_debug import debug
+from movoid_debug import debug, FLOW
 from movoid_function import replace_function, decorate_class_function_exclude, STACK, stack, decorate_class_function_include
 from movoid_log import LogLevel
 
@@ -58,14 +58,16 @@ def common_print(*args, html=False, also_console=None, level='INFO', sep=' ', en
         stack_str = f'[{stack_frame.info(stack_info_level)}] '
     else:
         stack_str = ''
+    print_str = stack_str + sep.join([str(_) for _ in args])
+    print_str_end = print_str + end
+    FLOW.print(print_str, level=level)
     if level >= RobotConfig.console_level:
         if file is None:
             if level >= LogLevel('ERROR'):
                 file = sys.stderr
             else:
                 file = sys.stdout
-        print_str = stack_str + sep.join([str(_) for _ in args]) + end
-        file.write(print_str)
+        file.write(print_str_end)
         if flush:
             file.flush()
 
@@ -116,6 +118,7 @@ class BasicCommon:
                 file.write(print_text_end)
                 if flush:
                     file.flush()
+            FLOW.print(print_text, level=level)
             if also_console:
                 if level >= RobotConfig.console_level:
                     if level >= LogLevel('WARN'):
