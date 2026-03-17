@@ -45,7 +45,7 @@ jobs:
       - name: show html report
         uses: actions/upload-artifact@v4
         with:
-          name: report_${{ matrix.python-version }}.html
+          name: report_${{ matrix.python-version }}_${{ matrix.rf-version.slice(2) }}.html
           path: report.html
       - name: Test with robotframework
         run: |
@@ -53,15 +53,15 @@ jobs:
       - name: show robot log.html
         uses: actions/upload-artifact@v4
         with:
-          name: report_${{ matrix.python-version }}_robot_log.html
+          name: report_${{ matrix.python-version }}_${{ matrix.rf-version.slice(2) }}_robot_log.html
           path: robot/log.html
       - name: show robot output.xml
         uses: actions/upload-artifact@v4
         with:
-          name: report_${{ matrix.python-version }}_robot_output.xml
+          name: report_${{ matrix.python-version }}_${{ matrix.rf-version.slice(2) }}_robot_output.xml
           path: robot/output.xml
       - name: show robot report.html
         uses: actions/upload-artifact@v4
         with:
-          name: report_${{ matrix.python-version }}_robot_report.html
+          name: report_${{ matrix.python-version }}_${{ matrix.rf-version.slice(2) }}_robot_report.html
           path: robot/report.html
