@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ "3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14" ]
-        rf-version: [ "==6.1.1" , ">=7" ]
+        rf-version: [ [ "==","6.1.1" ] , [ ">=","7" ] ]
 
     steps:
       - uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install flake8 pytest pytest-html
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          python -m pip install robotframework${{ matrix.rf-version }}
+          python -m pip install robotframework${{ matrix.rf-version.0 }}${{ matrix.rf-version.1 }}
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
@@ -45,7 +45,7 @@ jobs:
       - name: show html report
         uses: actions/upload-artifact@v4
         with:
-          name: report_${{ matrix.python-version }}_${{ slice(matrix.rf-version,2) }}.html
+          name: report_${{ matrix.python-version }}_${{ matrix.rf-version.1 }}.html
           path: report.html
       - name: Test with robotframework
         run: |
@@ -53,15 +53,15 @@ jobs:
       - name: show robot log.html
         uses: actions/upload-artifact@v4
         with:
-          name: report_${{ matrix.python-version }}_${{ slice(matrix.rf-version,2) }}_robot_log.html
+          name: report_${{ matrix.python-version }}_${{ matrix.rf-version.1 }}_robot_log.html
           path: robot/log.html
       - name: show robot output.xml
         uses: actions/upload-artifact@v4
         with:
-          name: report_${{ matrix.python-version }}_${{ slice(matrix.rf-version,2) }}_robot_output.xml
+          name: report_${{ matrix.python-version }}_${{ matrix.rf-version.1 }}_robot_output.xml
           path: robot/output.xml
       - name: show robot report.html
         uses: actions/upload-artifact@v4
         with:
-          name: report_${{ matrix.python-version }}_${{ slice(matrix.rf-version,2) }}_robot_report.html
+          name: report_${{ matrix.python-version }}_${{ matrix.rf-version.1 }}_robot_report.html
           path: robot/report.html
