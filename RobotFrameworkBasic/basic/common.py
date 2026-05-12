@@ -226,6 +226,28 @@ class BasicCommon:
                 re_value = value
         return re_value
 
+    def analyse_key(self, value, split='.'):
+        """
+        将目标字符串转换成一个key的list
+        :param value: 字符串则进行转换，其他的不转换
+        :param split: 字符串的分隔符，默认是.
+        :return:
+        """
+        self.print(f'try to change str to list:({type(value).__name__}):{value}')
+        if isinstance(value, str):
+            try:
+                re_value = json.loads(value)
+            except json.decoder.JSONDecodeError:
+                re_value = value.split(split)
+                for index, item in enumerate(re_value):
+                    try:
+                        re_value[index] = int(item)
+                    except ValueError:
+                        pass
+        else:
+            re_value = value
+        return re_value
+
     def convert_value_to(self, var, var_type=None, return_type_str=False):
         """
         将当前变量转换为相应的类型

@@ -47,3 +47,14 @@ class Test_function_var:
             pass
         else:
             raise AssertionError
+
+    def test_04_analyse_key(self):
+        assert self.rf.analyse_key(1) == 1
+        assert self.rf.analyse_key({1: 2}) == {1: 2}
+        assert self.rf.analyse_key([3, 1, 8]) == [3, 1, 8]
+        assert self.rf.analyse_key('123') == 123
+        assert self.rf.analyse_key('"123"') == "123"
+        assert self.rf.analyse_key('1.2.3') == [1, 2, 3]
+        assert self.rf.analyse_key('rf.5.p6.5s') == ['rf', 5, 'p6', '5s']
+        assert self.rf.analyse_key('[1, 2, 3]') == [1, 2, 3]
+        assert self.rf.analyse_key('1#2.3#4', '#') == [1, '2.3', 4]
