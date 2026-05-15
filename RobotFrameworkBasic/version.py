@@ -15,6 +15,8 @@ if run_file.stem == 'robot' and run_file.parent.name.lower() == 'scripts':
     run = 'robot'
 elif run_file.name == 'run.py' and run_file.parent.name == 'robot' and run_file.parents[1].name.lower() == 'site-packages':
     run = 'robot'
+elif run_file.name == 'robotcode' and run_file.parent.name == 'tool' and run_file.parents[1].name == 'bundled':
+    run = 'robot'
 else:
     run = 'python'
 if run == 'robot':
