@@ -61,15 +61,19 @@ def common_print(*args, html=False, also_console=None, level='INFO', sep=' ', en
     print_str = stack_str + sep.join([str(_) for _ in args])
     print_str_end = print_str + end
     FLOW.print(print_str, level=level)
-    if level >= RobotConfig.console_level:
-        if file is None:
-            if level >= LogLevel('ERROR'):
-                file = sys.stderr
-            else:
-                file = sys.stdout
-        file.write(print_str_end)
-        if flush:
-            file.flush()
+    if file is None:
+        if level >= LogLevel('ERROR'):
+            file = sys.stderr
+        else:
+            file = sys.stdout
+    if file == sys.stderr:
+        if level < LogLevel('ERROR'):
+            level = LogLevel('ERROR')
+    if level < RobotConfig.console_level and file in (sys.stdout, sys.stderr):
+        return
+    file.write(print_str_end)
+    if flush:
+        file.flush()
 
 
 replace_function(print, common_print)
