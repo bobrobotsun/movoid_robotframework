@@ -137,17 +137,19 @@ if VERSION:
                         result.endtime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
                         LOGGER.end_keyword(combine)
                     else:
-                        print(func.__name__, *arg_print_list, stacklevel=1)  # noqa
+                        if _log_keyword_structure is not None:
+                            print(func.__name__, *arg_print_list, stacklevel=1)  # noqa
                         try:
                             re_value = func(*args, **kwargs)
                         except Exception as err:
-                            print(traceback.format_exc(), stacklevel=1)  # noqa
+                            if _log_keyword_structure is not None:
+                                print(traceback.format_exc(), stacklevel=1)  # noqa
                             if _return_when_error is not None:
                                 re_value = _return_when_error
                             else:
                                 temp_error = err
                         else:
-                            if show_re_bool:
+                            if _log_keyword_structure is not None and show_re_bool:
                                 print(func.__name__, f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                     if temp_error is not None:
                         raise temp_error
@@ -226,17 +228,19 @@ if VERSION:
                         result.end_time = datetime.datetime.now()
                         LOGGER.end_keyword(data, result)
                     else:
-                        print(func.__name__, *arg_print_list, stacklevel=1)  # noqa
+                        if _log_keyword_structure is not None:
+                            print(func.__name__, *arg_print_list, stacklevel=1)  # noqa
                         try:
                             re_value = func(*args, **kwargs)
                         except Exception as err:
-                            print(traceback.format_exc(), stacklevel=1)  # noqa
+                            if _log_keyword_structure is not None:
+                                print(traceback.format_exc(), stacklevel=1)  # noqa
                             if _return_when_error is not None:
                                 re_value = _return_when_error
                             else:
                                 temp_error = err
                         else:
-                            if show_re_bool:
+                            if _log_keyword_structure is not None and show_re_bool:
                                 print(func.__name__, f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                     if temp_error is not None:
                         raise temp_error
@@ -269,7 +273,8 @@ else:
                 arg_print_list = _analyse_arg_dict_to_arg_list(
                     arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure,
                     _return_name=_return_name, _show_return_info=_show_return_info, _simple_doc=_simple_doc)
-                print(func.__name__, *arg_print_list, stacklevel=1)  # noqa
+                if _log_keyword_structure is not None:
+                    print(func.__name__, *arg_print_list, stacklevel=1)  # noqa
                 re_value = None
                 temp_error = None
                 if '_show_return_info' in arg_dict['arg']:
@@ -284,14 +289,14 @@ else:
                 except Exception as err:
                     if _return_when_error is not None:
                         re_value = _return_when_error
-                        if show_re_bool:
+                        if _log_keyword_structure is not None and show_re_bool:
                             print(f'[error]{func.__name__}: {pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                     else:
                         temp_error = err
                 if temp_error is not None:
                     raise temp_error
                 else:
-                    if show_re_bool:
+                    if _log_keyword_structure is not None and show_re_bool:
                         print(f'{func.__name__}: {pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                     return re_value
 
