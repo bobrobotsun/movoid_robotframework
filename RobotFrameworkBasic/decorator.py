@@ -137,17 +137,19 @@ if VERSION:
                         result.endtime = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S.%f')[:-3]  # noqa
                         LOGGER.end_keyword(combine)
                     else:
-                        print(func.__name__, *arg_print_list, stacklevel=1)  # noqa
+                        if _log_keyword_structure is not None:
+                            print(func.__name__, *arg_print_list, stacklevel=1)  # noqa
                         try:
                             re_value = func(*args, **kwargs)
                         except Exception as err:
-                            print(traceback.format_exc(), stacklevel=1)  # noqa
+                            if _log_keyword_structure is not None:
+                                print(traceback.format_exc(), stacklevel=1)  # noqa
                             if _return_when_error is not None:
                                 re_value = _return_when_error
                             else:
                                 temp_error = err
                         else:
-                            if show_re_bool:
+                            if _log_keyword_structure is not None and show_re_bool:
                                 print(func.__name__, f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                     if temp_error is not None:
                         raise temp_error
@@ -226,17 +228,19 @@ if VERSION:
                         result.end_time = datetime.datetime.now()
                         LOGGER.end_keyword(data, result)
                     else:
-                        print(func.__name__, *arg_print_list, stacklevel=1)  # noqa
+                        if _log_keyword_structure is not None:
+                            print(func.__name__, *arg_print_list, stacklevel=1)  # noqa
                         try:
                             re_value = func(*args, **kwargs)
                         except Exception as err:
-                            print(traceback.format_exc(), stacklevel=1)  # noqa
+                            if _log_keyword_structure is not None:
+                                print(traceback.format_exc(), stacklevel=1)  # noqa
                             if _return_when_error is not None:
                                 re_value = _return_when_error
                             else:
                                 temp_error = err
                         else:
-                            if show_re_bool:
+                            if _log_keyword_structure is not None and show_re_bool:
                                 print(func.__name__, f'{pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                     if temp_error is not None:
                         raise temp_error
@@ -269,7 +273,8 @@ else:
                 arg_print_list = _analyse_arg_dict_to_arg_list(
                     arg_dict, _return_when_error=_return_when_error, _log_keyword_structure=_log_keyword_structure,
                     _return_name=_return_name, _show_return_info=_show_return_info, _simple_doc=_simple_doc)
-                print(func.__name__, *arg_print_list, stacklevel=1)  # noqa
+                if _log_keyword_structure is not None:
+                    print(func.__name__, *arg_print_list, stacklevel=1)  # noqa
                 re_value = None
                 temp_error = None
                 if '_show_return_info' in arg_dict['arg']:
@@ -284,14 +289,14 @@ else:
                 except Exception as err:
                     if _return_when_error is not None:
                         re_value = _return_when_error
-                        if show_re_bool:
+                        if _log_keyword_structure is not None and show_re_bool:
                             print(f'[error]{func.__name__}: {pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                     else:
                         temp_error = err
                 if temp_error is not None:
                     raise temp_error
                 else:
-                    if show_re_bool:
+                    if _log_keyword_structure is not None and show_re_bool:
                         print(f'{func.__name__}: {pre_re_str}{re_value}({type(re_value).__name__}):is return value', stacklevel=1)  # noqa
                     return re_value
 
@@ -806,25 +811,25 @@ def check_parameters_type(convert=True, check_arguments=True, check_return=True)
 
 
 STACK.this_file_lineno_should_ignore(120, check_text="re_value = func(*args, **kwargs)")
-STACK.this_file_lineno_should_ignore(142, check_text="re_value = func(*args, **kwargs)")
-STACK.this_file_lineno_should_ignore(209, check_text="re_value = func(*args, **kwargs)")
-STACK.this_file_lineno_should_ignore(231, check_text="re_value = func(*args, **kwargs)")
-STACK.this_file_lineno_should_ignore(283, check_text="re_value = func(*args, **kwargs)")
-STACK.this_file_lineno_should_ignore(734, check_text="re_value = func(**kwargs)")
+STACK.this_file_lineno_should_ignore(143, check_text="re_value = func(*args, **kwargs)")
+STACK.this_file_lineno_should_ignore(211, check_text="re_value = func(*args, **kwargs)")
+STACK.this_file_lineno_should_ignore(234, check_text="re_value = func(*args, **kwargs)")
+STACK.this_file_lineno_should_ignore(288, check_text="re_value = func(*args, **kwargs)")
+STACK.this_file_lineno_should_ignore(739, check_text="re_value = func(**kwargs)")
 
-STACK.this_file_lineno_should_ignore(736, check_text="error_function(**error_kwargs)")
+STACK.this_file_lineno_should_ignore(741, check_text="error_function(**error_kwargs)")
 
-STACK.this_file_lineno_should_ignore(377, check_text="check_bool = adapt_call(init_check_function, ori_kwargs=check_kwargs)")
-STACK.this_file_lineno_should_ignore(398, check_text="adapt_call(do_function, ori_kwargs=do_kwargs)")
-STACK.this_file_lineno_should_ignore(413, check_text="check_bool = adapt_call(check_function, ori_kwargs=check_kwargs)")
-STACK.this_file_lineno_should_ignore(455, check_text="re_value = adapt_call(running_part, args, kwargs)")
-STACK.this_file_lineno_should_ignore(523, check_text="check_bool = adapt_call(init_check_function, ori_kwargs=check_kwargs)")
-STACK.this_file_lineno_should_ignore(544, check_text="check_bool = adapt_call(check_function, ori_kwargs=check_kwargs)")
-STACK.this_file_lineno_should_ignore(587, check_text="re_value = adapt_call(running_part, args, kwargs)")
-STACK.this_file_lineno_should_ignore(660, check_text="do_bool = adapt_call(do_function, ori_kwargs=do_kwargs)")
-STACK.this_file_lineno_should_ignore(682, check_text="check_bool = adapt_call(check_function, ori_kwargs=check_kwargs)")
-STACK.this_file_lineno_should_ignore(717, check_text="re_value = adapt_call(running_part, args, kwargs)")
+STACK.this_file_lineno_should_ignore(382, check_text="check_bool = adapt_call(init_check_function, ori_kwargs=check_kwargs)")
+STACK.this_file_lineno_should_ignore(403, check_text="adapt_call(do_function, ori_kwargs=do_kwargs)")
+STACK.this_file_lineno_should_ignore(418, check_text="check_bool = adapt_call(check_function, ori_kwargs=check_kwargs)")
+STACK.this_file_lineno_should_ignore(460, check_text="re_value = adapt_call(running_part, args, kwargs)")
+STACK.this_file_lineno_should_ignore(528, check_text="check_bool = adapt_call(init_check_function, ori_kwargs=check_kwargs)")
+STACK.this_file_lineno_should_ignore(549, check_text="check_bool = adapt_call(check_function, ori_kwargs=check_kwargs)")
+STACK.this_file_lineno_should_ignore(592, check_text="re_value = adapt_call(running_part, args, kwargs)")
+STACK.this_file_lineno_should_ignore(665, check_text="do_bool = adapt_call(do_function, ori_kwargs=do_kwargs)")
+STACK.this_file_lineno_should_ignore(687, check_text="check_bool = adapt_call(check_function, ori_kwargs=check_kwargs)")
+STACK.this_file_lineno_should_ignore(722, check_text="re_value = adapt_call(running_part, args, kwargs)")
 
-STACK.this_file_lineno_should_ignore(457, check_text="raising_part(re_value)")
-STACK.this_file_lineno_should_ignore(589, check_text="raising_part(re_value)")
-STACK.this_file_lineno_should_ignore(719, check_text="raising_part(re_value)")
+STACK.this_file_lineno_should_ignore(462, check_text="raising_part(re_value)")
+STACK.this_file_lineno_should_ignore(594, check_text="raising_part(re_value)")
+STACK.this_file_lineno_should_ignore(724, check_text="raising_part(re_value)")

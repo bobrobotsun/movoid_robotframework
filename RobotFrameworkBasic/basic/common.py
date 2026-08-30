@@ -364,7 +364,6 @@ class BasicCommon:
             else:
                 return default
         if type(change_input).__name__ == param_style_str:
-            print('style is correct, we do not change it.')
             return change_input
         print(f'try to change <{change_input}> to {param_style}')
         try:
